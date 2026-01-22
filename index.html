@@ -1,0 +1,137 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CreatorBrand Pro | Content Strategy & Brand Growth</title>
+    
+    <!-- Performance Hints -->
+    <link rel="preconnect" href="https://sb.kostagenaris.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://sb.kostagenaris.com">
+    
+    <!-- Quill Rich Text Editor Styles -->
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:ital,wght@0,700;0,800;0,900;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              accent: 'var(--accent-color, #ccff00)',
+              dark: '#000000',
+              card: '#080808',
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              display: ['Montserrat', 'sans-serif'],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      :root {
+        --accent-color: #ccff00;
+      }
+      html {
+        scroll-behavior: smooth;
+        background-color: #000; /* Prevent white flash */
+      }
+      body {
+        background-color: #ffffff;
+        color: #000000;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        overflow-x: hidden;
+      }
+      .glass {
+        background: rgba(0, 0, 0, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+      }
+      /* Hardware Acceleration for smooth scrolling & animations */
+      .gpu-accelerated {
+        transform: translateZ(0);
+        backface-visibility: hidden;
+        perspective: 1000;
+        will-change: transform, opacity;
+      }
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #f8f8f8;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #000000;
+      }
+      .font-display {
+        font-family: 'Montserrat', sans-serif;
+      }
+      .text-hollow {
+        -webkit-text-stroke: 1.2px black;
+        color: transparent;
+        paint-order: stroke fill;
+      }
+      ::selection {
+        background: var(--accent-color);
+        color: #000000;
+      }
+      /* Instant loading entry animation */
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      .fade-in {
+        animation: fadeIn 0.4s ease-out forwards;
+      }
+
+      /* Quill Overrides for Dark Dashboard */
+      .ql-toolbar.ql-snow {
+        border-color: rgba(255,255,255,0.1) !important;
+        background: rgba(255,255,255,0.05);
+        border-radius: 4px 4px 0 0;
+      }
+      .ql-container.ql-snow {
+        border-color: rgba(255,255,255,0.1) !important;
+        background: rgba(255,255,255,0.02);
+        border-radius: 0 0 4px 4px;
+        min-height: 300px;
+        font-family: 'Inter', sans-serif;
+        font-size: 16px;
+      }
+      .ql-snow .ql-stroke { stroke: #fff !important; }
+      .ql-snow .ql-fill { fill: #fff !important; }
+      .ql-snow .ql-picker { color: #fff !important; }
+      .ql-snow .ql-picker-options {
+        background-color: #0A0A0A !important;
+        border-color: rgba(255,255,255,0.1) !important;
+      }
+      .ql-editor.ql-blank::before { color: rgba(255,255,255,0.2) !important; }
+      .ql-editor { color: #fff; }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom": "https://esm.sh/react-dom@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+    "react-router-dom": "https://esm.sh/react-router-dom@^7.12.0",
+    "framer-motion": "https://esm.sh/framer-motion@^12.26.2",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.39.0",
+    "react-quill": "https://esm.sh/react-quill-new@^3.3.3"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
