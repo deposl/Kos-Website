@@ -32,6 +32,22 @@ interface SiteContextType {
 
 const SiteContext = createContext<SiteContextType | undefined>(undefined);
 
+/**
+ * Utility to safely handle localStorage operations
+ * Prevents crashes when base64 images exceed the 5MB quota
+ */
+const safeLocalStorageSet = (key: string, value: string) => {
+  try {
+    localStorage.setItem(key, value);
+  } catch (e) {
+    if (e instanceof DOMException && (e.code === 22 || e.code === 1014 || e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED')) {
+      console.warn('⚠️ Browser storage quota exceeded. Site will function normally but cache is disabled for this session.');
+    } else {
+      console.error('Local storage error:', e);
+    }
+  }
+};
+
 export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [dbConfig, setDbConfigState] = useState(() => ({
     url: localStorage.getItem('db_url') || defaultUrl,
@@ -102,7 +118,8 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
 
       setContent(updatedContent);
-      localStorage.setItem(CONTENT_CACHE_KEY, JSON.stringify(updatedContent));
+      // Use the safe utility to avoid QuotaExceededError
+      safeLocalStorageSet(CONTENT_CACHE_KEY, JSON.stringify(updatedContent));
     } catch (err: any) {
       console.error('❌ Data Sync Failed:', err);
     } finally {
