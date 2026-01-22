@@ -20,12 +20,21 @@ export interface TypographyConfig {
   h2: number;
 }
 
+export interface SocialLinks {
+  instagram: string;
+  youtube: string;
+  twitter: string;
+  linkedin: string;
+  facebook: string;
+}
+
 export interface BrandingContent {
   siteName: string;
   accentColor: string;
   logoText: string;
   logoSubText: string;
   adminKey?: string;
+  socialLinks: SocialLinks;
 }
 
 export interface ClientBrand {
@@ -42,6 +51,11 @@ export interface HomeContent {
   heroImages: string[];
   serviceImages: string[];
   heroMood: string;
+  heroWatermark: string;
+  philosophyLine1: string;
+  philosophyLine2: string;
+  serviceCardTitle: string;
+  serviceCardLabel: string;
   marqueeText: string;
   aboutTitle: string;
   aboutText: string[];

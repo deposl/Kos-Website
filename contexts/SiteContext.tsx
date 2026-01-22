@@ -32,18 +32,12 @@ interface SiteContextType {
 
 const SiteContext = createContext<SiteContextType | undefined>(undefined);
 
-/**
- * Utility to safely handle localStorage operations
- * Prevents crashes when base64 images exceed the 5MB quota
- */
 const safeLocalStorageSet = (key: string, value: string) => {
   try {
     localStorage.setItem(key, value);
   } catch (e) {
     if (e instanceof DOMException && (e.code === 22 || e.code === 1014 || e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED')) {
-      console.warn('⚠️ Browser storage quota exceeded. Site will function normally but cache is disabled for this session.');
-    } else {
-      console.error('Local storage error:', e);
+      console.warn('⚠️ Browser storage quota exceeded.');
     }
   }
 };
@@ -56,20 +50,21 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const supabase = useMemo(() => createClient(dbConfig.url, dbConfig.key), [dbConfig]);
 
-  const [content, setContent] = useState<SiteContent>(() => {
+  // Prevent flicker: start with cache or NULL, not the default content placeholders
+  const [content, setContent] = useState<SiteContent | null>(() => {
     const cached = localStorage.getItem(CONTENT_CACHE_KEY);
     if (cached) {
       try {
         return JSON.parse(cached);
       } catch (e) {
-        return defaultContent;
+        return null;
       }
     }
-    return defaultContent;
+    return null; 
   });
 
   const [isAdmin, setIsAdmin] = useState(() => sessionStorage.getItem('is_admin') === 'true');
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!content); // Only loading if we don't even have a cache
 
   const setDbConfig = (config: { url: string; key: string }) => {
     localStorage.setItem('db_url', config.url);
@@ -81,9 +76,6 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchData = async () => {
     try {
-      const hasCache = localStorage.getItem(CONTENT_CACHE_KEY) !== null;
-      if (!hasCache) setIsLoading(true);
-
       const [settingsRes, blogsRes, favsRes] = await Promise.all([
         supabase.from('site_settings').select('*').eq('id', 1).maybeSingle(),
         supabase.from('blogs').select('*').order('date', { ascending: false }),
@@ -94,6 +86,7 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const blogs = blogsRes.data || [];
       const favs = favsRes.data || [];
 
+      // Use default as a safe fall-back if DB is literally empty, but otherwise use DB
       const updatedContent: SiteContent = {
         branding: { 
           ...defaultContent.branding, 
@@ -101,11 +94,7 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
           adminKey: settings?.admin_key || 'admin123'
         },
         typography: settings?.typography_data || (defaultContent as any).typography || {
-          nav: 15,
-          small: 13.5,
-          body: 21,
-          h1: 120,
-          h2: 80
+          nav: 15, small: 13.5, body: 21, h1: 120, h2: 80
         },
         home: { ...defaultContent.home, ...(settings?.home_data || {}) },
         services: { ...defaultContent.services, ...(settings?.services_data || {}) },
@@ -118,10 +107,11 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
 
       setContent(updatedContent);
-      // Use the safe utility to avoid QuotaExceededError
       safeLocalStorageSet(CONTENT_CACHE_KEY, JSON.stringify(updatedContent));
     } catch (err: any) {
       console.error('❌ Data Sync Failed:', err);
+      // If DB fails and we have NO content, use default as last resort
+      if (!content) setContent(defaultContent);
     } finally {
       setIsLoading(false);
     }
@@ -132,11 +122,11 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [dbConfig]);
 
   useEffect(() => {
-    if (content.branding?.accentColor) {
+    if (content?.branding?.accentColor) {
       document.documentElement.style.setProperty('--accent-color', content.branding.accentColor);
     }
     
-    const ty = content.typography;
+    const ty = content?.typography;
     if (ty) {
       document.documentElement.style.setProperty('--font-nav', `${ty.nav}px`);
       document.documentElement.style.setProperty('--font-small', `${ty.small}px`);
@@ -144,22 +134,19 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
       document.documentElement.style.setProperty('--font-h1', `${ty.h1}px`);
       document.documentElement.style.setProperty('--font-h2', `${ty.h2}px`);
     }
-  }, [content.branding, content.typography]);
+  }, [content]);
 
   const testConnection = async (): Promise<TestResult> => {
     const probeUrl = `${dbConfig.url}/rest/v1/`;
     try {
       const response = await fetch(`${probeUrl}site_settings?select=id&limit=1`, {
         method: 'GET',
-        headers: {
-          'apikey': dbConfig.key,
-          'Authorization': `Bearer ${dbConfig.key}`
-        }
+        headers: { 'apikey': dbConfig.key, 'Authorization': `Bearer ${dbConfig.key}` }
       });
-      if (response.ok) return { success: true, message: 'SUCCESS: Database pipeline active.', url: dbConfig.url };
-      return { success: false, message: 'SERVER ERROR: Check Supabase URL or Key.', url: dbConfig.url };
+      if (response.ok) return { success: true, message: 'SUCCESS', url: dbConfig.url };
+      return { success: false, message: 'SERVER ERROR', url: dbConfig.url };
     } catch (err: any) {
-      return { success: false, message: 'CONNECTION FAILED: Check URL or CORS settings.', url: dbConfig.url };
+      return { success: false, message: 'CONNECTION FAILED', url: dbConfig.url };
     }
   };
 
@@ -182,40 +169,31 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
       nav_links: newContent.navLinks
     }, { onConflict: 'id' });
     
-    if (sErr) throw new Error(`[Settings Save Failed] ${sErr.message}`);
+    if (sErr) throw new Error(sErr.message);
 
     const { error: bDelErr } = await supabase.from('blogs').delete().filter('id', 'not.is', null);
-    if (bDelErr) throw new Error(`[Blogs Clean Failed] ${bDelErr.message}`);
+    if (bDelErr) throw new Error(bDelErr.message);
 
     const blogsToInsert = (newContent.blogs || []).map(b => ({
-      title: b.title,
-      date: b.date,
-      excerpt: b.excerpt,
-      content: b.content,
-      image: b.image,
-      seo_title: b.seo_title || '',
-      seo_description: b.seo_description || ''
+      title: b.title, date: b.date, excerpt: b.excerpt, content: b.content, image: b.image,
+      seo_title: b.seo_title || '', seo_description: b.seo_description || ''
     }));
 
     if (blogsToInsert.length > 0) {
       const { error: bInsErr } = await supabase.from('blogs').insert(blogsToInsert);
-      if (bInsErr) throw new Error(`[Blogs Save Failed] ${bInsErr.message}`);
+      if (bInsErr) throw new Error(bInsErr.message);
     }
 
     const { error: fDelErr } = await supabase.from('favorites').delete().filter('id', 'not.is', null);
-    if (fDelErr) throw new Error(`[Favorites Clean Failed] ${fDelErr.message}`);
+    if (fDelErr) throw new Error(fDelErr.message);
 
     const favsToInsert = (newContent.favorites || []).map((f, i) => ({
-      name: f.name,
-      desc: f.desc,
-      code: f.code,
-      img: f.img,
-      order_index: i
+      name: f.name, desc: f.desc, code: f.code, img: f.img, order_index: i
     }));
 
     if (favsToInsert.length > 0) {
       const { error: fInsErr } = await supabase.from('favorites').insert(favsToInsert);
-      if (fInsErr) throw new Error(`[Favorites Save Failed] ${fInsErr.message}`);
+      if (fInsErr) throw new Error(fInsErr.message);
     }
 
     localStorage.removeItem(CONTENT_CACHE_KEY);
@@ -223,7 +201,7 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const login = (pass: string) => {
-    const validKey = content.branding.adminKey || 'admin123';
+    const validKey = content?.branding?.adminKey || 'admin123';
     if (pass === validKey) { 
       sessionStorage.setItem('is_admin', 'true');
       setIsAdmin(true);
@@ -239,7 +217,8 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <SiteContext.Provider value={{ 
-      content, updateContent, isAdmin, isLoading, login, logout,
+      content: content || defaultContent, // Always provide default if null, but App will wait for !isLoading
+      updateContent, isAdmin, isLoading, login, logout,
       isCloudConnected: true, refreshData: fetchData, testConnection,
       dbConfig, setDbConfig
     }}>

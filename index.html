@@ -40,7 +40,7 @@
       }
       html {
         scroll-behavior: smooth;
-        background-color: #000; /* Prevent white flash */
+        background-color: #000;
       }
       body {
         background-color: #ffffff;
@@ -49,12 +49,35 @@
         -moz-osx-font-smoothing: grayscale;
         overflow-x: hidden;
       }
+      /* Initial Preloader styles */
+      #initial-loader {
+        position: fixed;
+        inset: 0;
+        background: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        transition: opacity 0.5s ease-out;
+      }
+      .loader-circle {
+        width: 80px;
+        height: 80px;
+        border: 2px solid rgba(255,255,255,0.1);
+        border-top: 2px solid var(--accent-color);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
       .glass {
         background: rgba(0, 0, 0, 0.95);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
       }
-      /* Hardware Acceleration for smooth scrolling & animations */
       .gpu-accelerated {
         transform: translateZ(0);
         backface-visibility: hidden;
@@ -82,7 +105,6 @@
         background: var(--accent-color);
         color: #000000;
       }
-      /* Instant loading entry animation */
       @keyframes fadeIn {
         from { opacity: 0; }
         to { opacity: 1; }
@@ -134,7 +156,22 @@
 </script>
 </head>
   <body>
+    <!-- Instant CSS Loader -->
+    <div id="initial-loader">
+      <div class="loader-circle"></div>
+    </div>
+
     <div id="root"></div>
     <script type="module" src="./index.tsx"></script>
+    <script>
+      // Remove preloader once React starts mounting
+      window.addEventListener('load', () => {
+        const loader = document.getElementById('initial-loader');
+        if (loader) {
+          loader.style.opacity = '0';
+          setTimeout(() => loader.remove(), 500);
+        }
+      });
+    </script>
   </body>
 </html>

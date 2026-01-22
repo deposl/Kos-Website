@@ -3,10 +3,17 @@ import { SiteContent } from '../types';
 
 export const defaultContent: SiteContent = {
   branding: {
-    siteName: "SEVA MOZHAEV",
+    siteName: "KOSTA GENARIS",
     accentColor: "#ccff00",
-    logoText: "SEV'S",
-    logoSubText: "PICS"
+    logoText: "KOSTA",
+    logoSubText: "GENARIS",
+    socialLinks: {
+      instagram: "https://instagram.com",
+      youtube: "https://youtube.com",
+      twitter: "https://twitter.com",
+      linkedin: "https://linkedin.com",
+      facebook: "https://facebook.com"
+    }
   },
   typography: {
     nav: 15,
@@ -23,10 +30,10 @@ export const defaultContent: SiteContent = {
     { id: '5', name: 'Contact', path: '/contact', isExternal: false, isButton: true },
   ],
   home: {
-    seo: { metaTitle: "Seva Mozhaev | Content Strategy & Brand Growth", metaDescription: "Deep strategy and creative high-impact production for world-class creators." },
+    seo: { metaTitle: "Kosta Genaris | Content Strategy & Brand Growth", metaDescription: "Deep strategy and creative high-impact production for world-class creators." },
     heroTitle: "GET CONNECTED",
     heroSubTitle: "CONNECTED",
-    heroDescription: "Deep strategy. Creative high-impact production. Follow Sev's Point of view™ on TikTok, Instagram, Facebook or LinkedIn.",
+    heroDescription: "Deep strategy. Creative high-impact production. Follow Kosta's Point of view™ on TikTok, Instagram, Facebook or LinkedIn.",
     heroImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1974&auto=format&fit=crop",
     heroImages: [
       "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1974&auto=format&fit=crop",
@@ -39,11 +46,16 @@ export const defaultContent: SiteContent = {
       "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1938&auto=format&fit=crop"
     ],
     heroMood: "Viral Design Mode",
+    heroWatermark: "@KOSTAGENARIS",
+    philosophyLine1: "I DON'T MAKE ADS.",
+    philosophyLine2: "I DESIGN STORIES.",
+    serviceCardTitle: "THE NEXUS",
+    serviceCardLabel: "Apply Now",
     marqueeText: "DESIGN STORIES DESIGN STORIES DESIGN STORIES",
-    aboutTitle: "THE MAN BEHIND THE PICS",
+    aboutTitle: "THE MAN BEHIND THE CONTENT",
     aboutText: [
-      "A Perth schoolteacher turned TikTok sensation, Seva Mozhaev redefined what it means to be a \"creator\" in the modern age. Standing at 6ft10, he's always stood out—but it's his viral vision that keeps people watching.",
-      "Today, he runs a creative empire focused on amplifying people and brands through the power of vertical storytelling."
+      "Kosta Genaris redefined what it means to be a \"creator\" in the modern age through viral vision and vertical storytelling.",
+      "Today, he runs a creative empire focused on amplifying people and brands through the power of high-impact content strategy."
     ],
     aboutImage: "https://images.unsplash.com/photo-1552058544-f2b08422138a?q=80&w=1998&auto=format&fit=crop",
     stats: [
@@ -68,7 +80,7 @@ export const defaultContent: SiteContent = {
     ]
   },
   services: {
-    seo: { metaTitle: "Strategy & Creative Support | Seva Mozhaev", metaDescription: "TikTok strategy, account audits, viral scripting, and executive positioning." },
+    seo: { metaTitle: "Strategy & Creative Support | Kosta Genaris", metaDescription: "TikTok strategy, account audits, viral scripting, and executive positioning." },
     headerLabel: "Elite Solutions",
     headerTitle: "BUILDING THE FUTURE",
     headerDescription: "From viral blueprinting to executive brand positioning, we build the infrastructure required for world-class content creators to scale infinitely.",
@@ -91,7 +103,7 @@ export const defaultContent: SiteContent = {
     ctaTitle: "READY TO DOMINATE?"
   },
   endorsements: {
-    seo: { metaTitle: "Brand Partnerships & Endorsements | Seva Mozhaev", metaDescription: "Native-style TikTok ads, experiential events, and long-term partnerships." },
+    seo: { metaTitle: "Brand Partnerships & Endorsements | Kosta Genaris", metaDescription: "Native-style TikTok ads, experiential events, and long-term partnerships." },
     headerTitle: "BRAND PARTNERS",
     headerDescription: "We work with brands that want to stop interrupting and start entertaining. Our partnerships are data-driven, authentic, and ROI-focused.",
     mainImage: "https://images.unsplash.com/photo-1557804506-669a67965ba0?q=80&w=2074&auto=format&fit=crop",
@@ -105,12 +117,12 @@ export const defaultContent: SiteContent = {
     ctaDescription: "Ready to get your brand in front of millions of highly engaged viewers? Request our full media kit and partnership deck."
   },
   favorites: [
-    { id: "1", name: "Pro Camera Gear", desc: "The exact setup I use for every viral video. 4K quality with a small footprint.", code: "SEVPRO20", img: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1938&auto=format&fit=crop" },
+    { id: "1", name: "Pro Camera Gear", desc: "The exact setup I use for every viral video. 4K quality with a small footprint.", code: "KOSTAPRO20", img: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1938&auto=format&fit=crop" },
     { id: "2", name: "Edit Master Suite", desc: "The only plugins you need to make your content pop. Essential for retention.", code: "VIRAL15", img: "https://images.unsplash.com/photo-1586717791821-3f44a563dc4c?q=80&w=2070&auto=format&fit=crop" },
     { id: "3", name: "Bio-Hacking Supps", desc: "Stay sharp during 12-hour content marathons. Clean energy, zero crash.", code: "CREATORFUEL", img: "https://images.unsplash.com/photo-1550572017-ed20015a0da6?q=80&w=2070&auto=format&fit=crop" }
   ],
-  favorites_seo: { metaTitle: "Sev's Favourite Things | Gear & Software", metaDescription: "The tools, gear, and software Seva uses to run his creative empire." },
-  blogs_seo: { metaTitle: "Journal & Insights | Seva Mozhaev", metaDescription: "Deep dives into content strategy, creativity, and the digital frontier." },
+  favorites_seo: { metaTitle: "Kosta's Favourite Things | Gear & Software", metaDescription: "The tools, gear, and software Kosta uses to run his creative empire." },
+  blogs_seo: { metaTitle: "Journal & Insights | Kosta Genaris", metaDescription: "Deep dives into content strategy, creativity, and the digital frontier." },
   blogs: [
     {
       id: "1",
@@ -119,8 +131,8 @@ export const defaultContent: SiteContent = {
       excerpt: "Why the shift to vertical storytelling is just getting started and how you can stay ahead.",
       content: "The landscape of social media is shifting faster than ever. In this post, we explore why vertical video continues to dominate attention spans and how creators can leverage AI tools to scale their production without losing their unique voice. Engagement metrics show that raw, unfiltered storytelling often outperforms high-budget commercials...",
       image: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1974&auto=format&fit=crop",
-      seo_title: "The Future of Vertical Content 2025 | Seva Mozhaev",
-      seo_description: "Explore the 2025 vertical content landscape with Seva Mozhaev."
+      seo_title: "The Future of Vertical Content 2025 | Kosta Genaris",
+      seo_description: "Explore the 2025 vertical content landscape with Kosta Genaris."
     }
   ]
 };

@@ -16,14 +16,14 @@ const Navbar: React.FC = () => {
   }, [location]);
 
   return (
-    <nav className="fixed w-full z-[100] bg-black top-0 h-28 md:h-36 flex items-center shadow-lg border-b border-white/5 transition-all duration-500">
+    <nav className="fixed w-full z-[100] bg-black top-0 h-24 md:h-36 flex items-center shadow-lg border-b border-white/5 transition-all duration-500">
       <div className="max-w-7xl mx-auto px-4 sm:px-8 w-full flex justify-between items-center">
         
         {/* Left Side: Logo */}
-        <div className="flex items-center gap-12">
+        <div className="flex items-center gap-6 md:gap-12">
           <Link to="/" className="flex items-center">
-            <div className="w-[70px] h-[70px] md:w-[88px] md:h-[88px] bg-white rounded-full flex items-center justify-center p-2 border border-white/20 transition-transform hover:scale-105 duration-300 shadow-[0_0_30px_rgba(255,255,255,0.15)] overflow-hidden">
-              <div className="text-black font-display font-black text-[11px] md:text-[14px] leading-[0.8] text-center tracking-tighter flex flex-col items-center justify-center h-full uppercase">
+            <div className="w-[60px] h-[60px] md:w-[88px] md:h-[88px] bg-white rounded-full flex items-center justify-center p-2 border border-white/20 transition-transform hover:scale-105 duration-300 shadow-[0_0_30px_rgba(255,255,255,0.15)] overflow-hidden">
+              <div className="text-black font-display font-black text-[9px] md:text-[14px] leading-[0.8] text-center tracking-tighter flex flex-col items-center justify-center h-full uppercase">
                 <span className="block">{branding.logoText}</span>
                 <span className="block">{branding.logoSubText}</span>
               </div>
@@ -47,13 +47,13 @@ const Navbar: React.FC = () => {
         </div>
 
         {/* Right Side: Contact Button & Mobile Toggle */}
-        <div className="flex items-center gap-4">
-          {/* Main Contact Button (Desktop) */}
+        <div className="flex items-center gap-3 md:gap-4">
+          {/* Main Contact Button (Mobile & Desktop) */}
           {navLinks.filter(link => link.isButton).map((link) => (
             <Link 
               key={link.id}
               to={link.path} 
-              className="hidden md:flex items-center justify-center border border-white px-8 py-3 text-[15px] font-display font-black uppercase tracking-[0.25em] text-white bg-transparent hover:bg-white hover:text-black transition-all duration-300"
+              className="flex items-center justify-center border border-white px-4 md:px-8 py-2 md:py-3 text-[10px] md:text-[15px] font-display font-black uppercase tracking-[0.2em] md:tracking-[0.25em] text-white bg-transparent hover:bg-white hover:text-black transition-all duration-300 whitespace-nowrap"
             >
               {link.name}
             </Link>
@@ -62,10 +62,10 @@ const Navbar: React.FC = () => {
           {/* Mobile Menu Toggle (Visible only on Mobile/Tablet) */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="lg:hidden bg-accent text-dark w-11 h-11 md:w-14 md:h-14 flex items-center justify-center rounded-sm transition-transform active:scale-95 z-[110]"
+            className="lg:hidden bg-accent text-dark w-10 h-10 md:w-14 md:h-14 flex items-center justify-center rounded-sm transition-transform active:scale-95 z-[110]"
             aria-label="Toggle Menu"
           >
-            {isOpen ? <X size={20} strokeWidth={3} /> : <Menu size={20} strokeWidth={3} />}
+            {isOpen ? <X size={18} strokeWidth={3} /> : <Menu size={18} strokeWidth={3} />}
           </button>
         </div>
       </div>

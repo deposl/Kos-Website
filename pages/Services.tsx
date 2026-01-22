@@ -99,16 +99,16 @@ const Services: React.FC = () => {
         <motion.section 
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
-          className="bg-dark rounded-sm p-20 text-center text-white relative overflow-hidden group"
+          className="bg-dark rounded-sm px-6 py-16 md:p-20 text-center text-white relative overflow-hidden group"
         >
           <div className="absolute inset-0 bg-accent/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-          <h2 className="text-5xl md:text-8xl font-display font-black uppercase italic tracking-tighter leading-none mb-12 relative z-10">
-            {services.ctaTitle.split(' ')[0]} <br /> <span className="text-accent underline decoration-4 underline-offset-8">{services.ctaTitle.split(' ').slice(1).join(' ')}</span>
+          <h2 className="text-4xl md:text-8xl font-display font-black uppercase italic tracking-tighter leading-[1.1] md:leading-none mb-12 relative z-10">
+            {services.ctaTitle.split(' ')[0]} <br /> <span className="text-accent underline decoration-2 md:decoration-4 underline-offset-4 md:underline-offset-8">{services.ctaTitle.split(' ').slice(1).join(' ')}</span>
           </h2>
           <motion.button 
             whileHover={{ scale: 1.05, backgroundColor: '#ffffff', color: '#000000' }}
             whileTap={{ scale: 0.95 }}
-            className="bg-accent text-dark px-16 py-6 rounded-sm font-black uppercase tracking-[0.4em] text-sm relative z-10 transition-colors shadow-2xl"
+            className="bg-accent text-dark px-8 md:px-16 py-6 rounded-sm font-black uppercase tracking-[0.4em] text-xs md:text-sm relative z-10 transition-colors shadow-2xl"
           >
             Start Your Transformation
           </motion.button>
