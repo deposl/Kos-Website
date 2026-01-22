@@ -12,7 +12,7 @@ const FavoriteDetail: React.FC = () => {
 
   if (!item) {
     return (
-      <div className="pt-28 md:pt-36 pb-20 bg-white min-h-screen flex items-center justify-center">
+      <div className="pt-24 md:pt-36 pb-20 bg-white min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-4xl font-display font-black uppercase tracking-tighter mb-4">Item Not Found</h1>
           <Link to="/favorites" className="text-accent bg-dark px-8 py-3 rounded-sm font-black uppercase tracking-widest text-xs inline-block">Back to Favorites</Link>
@@ -22,7 +22,7 @@ const FavoriteDetail: React.FC = () => {
   }
 
   return (
-    <div className="pt-28 md:pt-36 pb-20 bg-white min-h-screen">
+    <div className="pt-24 md:pt-36 pb-20 bg-white min-h-screen">
       <div className="max-w-6xl mx-auto px-4 pt-12">
         <Link to="/favorites" className="inline-flex items-center text-xs font-black uppercase tracking-[0.3em] mb-12 group">
           <ArrowLeft className="mr-2 w-4 h-4 group-hover:-translate-x-2 transition-transform" /> Back to Curated List

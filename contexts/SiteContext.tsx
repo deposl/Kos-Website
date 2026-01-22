@@ -48,9 +48,6 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const supabase = useMemo(() => createClient(dbConfig.url, dbConfig.key), [dbConfig]);
 
-  // Priority 1: Cache (Instant)
-  // Priority 2: Default (Instant Fallback)
-  // Priority 3: Database (Async Sync)
   const [content, setContent] = useState<SiteContent>(() => {
     const cached = localStorage.getItem(CONTENT_CACHE_KEY);
     if (cached) {
@@ -75,7 +72,6 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const fetchData = async () => {
-    // We don't block the UI with a loader here. We sync in the background.
     try {
       const [settingsRes, blogsRes, favsRes] = await Promise.all([
         supabase.from('site_settings').select('*').eq('id', 1).maybeSingle(),
@@ -155,7 +151,9 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
           siteName: newContent.branding.siteName,
           accentColor: newContent.branding.accentColor,
           logoText: newContent.branding.logoText,
-          logoSubText: newContent.branding.logoSubText
+          logoSubText: newContent.branding.logoSubText,
+          favicon: newContent.branding.favicon,
+          socialLinks: newContent.branding.socialLinks
         },
         typography_data: newContent.typography,
         admin_key: newContent.branding.adminKey || 'admin123',
@@ -169,7 +167,6 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (sErr) throw new Error(sErr.message);
 
-      // Rebuild related tables
       await supabase.from('blogs').delete().filter('id', 'not.is', null);
       const blogsToInsert = (newContent.blogs || []).map(b => ({
         title: b.title, date: b.date, excerpt: b.excerpt, content: b.content, image: b.image,

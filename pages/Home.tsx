@@ -117,7 +117,7 @@ const Home: React.FC = () => {
   return (
     <div className="bg-white text-dark overflow-hidden font-sans fade-in">
       {/* Hero Section */}
-      <section className="relative h-auto md:h-[88vh] flex flex-col md:flex-row bg-white pt-28 md:pt-36 gpu-accelerated overflow-hidden border-b border-gray-50">
+      <section className="relative h-auto md:h-[88vh] flex flex-col md:flex-row bg-white pt-24 md:pt-36 gpu-accelerated overflow-hidden border-b border-gray-50">
         
         {/* Right Column (Visuals - Image Slider) */}
         <div className="w-full md:w-[55%] h-[50vh] md:h-full relative overflow-hidden bg-gray-100 order-1 md:order-2 touch-pan-y">

@@ -37,7 +37,7 @@ const Contact: React.FC = () => {
   };
 
   return (
-    <div className="pt-40 pb-20 bg-white min-h-screen">
+    <div className="pt-32 md:pt-40 pb-20 bg-white min-h-screen">
       <div className="max-w-7xl mx-auto px-4">
         <div className="mb-20">
           <h1 className="text-6xl md:text-8xl font-display font-black uppercase italic tracking-tighter mb-6">

@@ -9,7 +9,7 @@ const Services: React.FC = () => {
   const { services } = content;
 
   return (
-    <div className="pt-28 md:pt-36 pb-20 bg-white">
+    <div className="pt-24 md:pt-36 pb-20 bg-white">
       <div className="max-w-7xl mx-auto px-4">
         {/* Header Section */}
         <div className="max-w-4xl mb-32 pt-12 md:pt-16">

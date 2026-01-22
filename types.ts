@@ -33,6 +33,7 @@ export interface BrandingContent {
   accentColor: string;
   logoText: string;
   logoSubText: string;
+  favicon?: string;
   adminKey?: string;
   socialLinks: SocialLinks;
 }

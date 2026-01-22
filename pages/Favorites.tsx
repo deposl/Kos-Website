@@ -10,7 +10,7 @@ const Favorites: React.FC = () => {
   const items = content.favorites;
 
   return (
-    <div className="pt-28 md:pt-36 pb-20 bg-white">
+    <div className="pt-24 md:pt-36 pb-20 bg-white">
       <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-24 pt-12 md:pt-16">
           <motion.h1 

@@ -9,6 +9,9 @@ const MetaHead: React.FC = () => {
   const { id } = useParams<{ id: string }>();
 
   useEffect(() => {
+    if (!content) return;
+
+    // --- Title and Description Logic ---
     let title = content.branding.siteName;
     let description = "Expert Content Strategy & Brand Growth.";
 
@@ -55,6 +58,18 @@ const MetaHead: React.FC = () => {
       document.head.appendChild(metaDesc);
     }
     metaDesc.setAttribute('content', description);
+
+    // --- Dynamic Favicon Logic ---
+    const favicon = content.branding.favicon;
+    if (favicon) {
+      let link: HTMLLinkElement | null = document.querySelector("link[rel*='icon']");
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.head.appendChild(link);
+      }
+      link.href = favicon;
+    }
   }, [location, content, id]);
 
   return null;

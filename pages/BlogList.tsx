@@ -10,7 +10,7 @@ const BlogList: React.FC = () => {
   const blogs = content.blogs || [];
 
   return (
-    <div className="pt-28 md:pt-36 pb-20 bg-white min-h-screen">
+    <div className="pt-24 md:pt-36 pb-20 bg-white min-h-screen">
       <div className="max-w-7xl mx-auto px-4">
         <div className="mb-24 pt-12 md:pt-16">
           <motion.h1 

@@ -16,7 +16,7 @@ const Endorsements: React.FC = () => {
   };
 
   return (
-    <div className="pt-28 md:pt-36 pb-20 bg-white">
+    <div className="pt-24 md:pt-36 pb-20 bg-white">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex flex-col md:flex-row gap-20 items-center mb-32 pt-12 md:pt-16">
           <div className="flex-1">

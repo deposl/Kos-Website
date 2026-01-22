@@ -172,7 +172,7 @@ const SEOEditor = ({ config, onChange }: { config: SEOConfig | undefined; onChan
   </div>
 );
 
-const ImageUploadField = ({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) => {
+const ImageUploadField = ({ label, value, onChange, className = "" }: { label: string; value: string; onChange: (v: string) => void; className?: string }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
 
@@ -192,7 +192,7 @@ const ImageUploadField = ({ label, value, onChange }: { label: string; value: st
   };
 
   return (
-    <div className="space-y-2">
+    <div className={`space-y-2 ${className}`}>
       <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">{label}</label>
       <div 
         onClick={() => fileInputRef.current?.click()}
@@ -305,7 +305,6 @@ const AdminDashboard: React.FC = () => {
   const [syncLog, setSyncLog] = useState<string[]>([]);
   const navigate = useNavigate();
 
-  // Inquiries and Subscribers State
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [isDataFetching, setIsDataFetching] = useState(false);
@@ -321,7 +320,6 @@ const AdminDashboard: React.FC = () => {
     }
   }, [isAdmin, navigate]);
 
-  // Fetch Inquiries or Subscribers when tab changes
   useEffect(() => {
     if (activeTab === 'inquiries' || activeTab === 'subscribers') {
       fetchLeads();
@@ -480,6 +478,16 @@ const AdminDashboard: React.FC = () => {
                       <input className="flex-grow bg-white/5 border border-white/10 px-4 font-mono text-sm uppercase text-white" value={localContent.branding.accentColor} onChange={(e) => updateSection('branding', { accentColor: e.target.value })} />
                     </div>
                   </div>
+                  
+                  {/* Favicon Upload */}
+                  <div className="md:col-span-2 mt-4">
+                    <ImageUploadField 
+                      label="Browser Favicon (Ideal: 32x32px or 64x64px Square)" 
+                      value={localContent.branding.favicon || ''} 
+                      onChange={(v) => updateSection('branding', { favicon: v })}
+                      className="max-w-xs"
+                    />
+                  </div>
                 </div>
 
                 <div className="mt-16 pt-10 border-t border-white/5">
@@ -529,6 +537,7 @@ const AdminDashboard: React.FC = () => {
               </div>
             )}
 
+            {/* Other tabs remain identical... */}
             {activeTab === 'navigation' && (
               <div className="space-y-10">
                 <div className="flex justify-between items-center">
@@ -631,7 +640,6 @@ const AdminDashboard: React.FC = () => {
                       <p className="text-gray-400 text-sm leading-relaxed italic border-l-2 border-accent/20 pl-4 py-2">"{inq.message}"</p>
                     </div>
                   ))}
-                  {inquiries.length === 0 && !isDataFetching && <div className="text-center py-20 text-gray-700 font-black uppercase text-xs tracking-widest border border-dashed border-white/5">No inquiries yet</div>}
                 </div>
               </div>
             )}
@@ -663,7 +671,6 @@ const AdminDashboard: React.FC = () => {
                       ))}
                     </tbody>
                   </table>
-                  {subscribers.length === 0 && !isDataFetching && <div className="p-20 text-center text-gray-700 font-black uppercase text-xs tracking-widest">No subscribers found</div>}
                 </div>
               </div>
             )}
@@ -691,7 +698,7 @@ const AdminDashboard: React.FC = () => {
               </div>
             )}
             
-            {(['services', 'endorsements', 'favorites', 'blogs', 'navigation'].includes(activeTab)) && (
+            {(['services', 'endorsements', 'favorites', 'blogs'].includes(activeTab)) && (
               <div className="flex items-center justify-center h-full text-gray-500 uppercase font-black text-xs tracking-[0.5em]">Content Module Loaded</div>
             )}
 
