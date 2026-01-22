@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSite } from '../../contexts/SiteContext';
-import ReactQuill from 'react-quill';
+import ReactQuill from 'react-quill-new';
 import { 
   Save, Layout, ClipboardList, Palette, FileText, MoveUp, 
   Loader2, Database, Trash2, Activity, RefreshCw,
