@@ -8,11 +8,12 @@ const Endorsements: React.FC = () => {
   const { content } = useSite();
   const { endorsements } = content;
 
+  // Fixed React.cloneElement error by returning the component itself instead of an element instance
   const getIcon = (title: string) => {
-    if (title.includes('Spark')) return <Zap />;
-    if (title.includes('Experiential')) return <Target />;
-    if (title.includes('Partnerships')) return <Award />;
-    return <PlayCircle />;
+    if (title.includes('Spark')) return Zap;
+    if (title.includes('Experiential')) return Target;
+    if (title.includes('Partnerships')) return Award;
+    return PlayCircle;
   };
 
   return (
@@ -38,22 +39,25 @@ const Endorsements: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-40">
-          {endorsements.options.map((opt, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.1 }}
-              className="bg-[#f8f8f8] border border-gray-50 p-10 rounded-sm hover:border-accent transition-all group"
-            >
-              <div className="w-16 h-16 bg-white rounded-sm flex items-center justify-center text-dark mb-8 group-hover:bg-accent transition-colors shadow-sm">
-                {React.cloneElement(getIcon(opt.title) as React.ReactElement, { size: 32 })}
-              </div>
-              <h3 className="text-xl font-display font-black uppercase mb-4 tracking-tighter">{opt.title}</h3>
-              <p className="text-gray-500 text-sm leading-relaxed">{opt.desc}</p>
-            </motion.div>
-          ))}
+          {endorsements.options.map((opt, idx) => {
+            const IconComponent = getIcon(opt.title);
+            return (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1 }}
+                className="bg-[#f8f8f8] border border-gray-50 p-10 rounded-sm hover:border-accent transition-all group"
+              >
+                <div className="w-16 h-16 bg-white rounded-sm flex items-center justify-center text-dark mb-8 group-hover:bg-accent transition-colors shadow-sm">
+                  <IconComponent size={32} />
+                </div>
+                <h3 className="text-xl font-display font-black uppercase mb-4 tracking-tighter">{opt.title}</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">{opt.desc}</p>
+              </motion.div>
+            );
+          })}
         </div>
 
         <div className="bg-dark rounded-sm p-12 md:p-24 text-center text-white relative overflow-hidden">

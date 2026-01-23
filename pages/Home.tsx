@@ -27,8 +27,9 @@ const Home: React.FC = () => {
     })
   };
 
+  // Fixed framer-motion transition type inference by using 'as const' on type property to satisfy AnimationGeneratorType
   const slideTransition = {
-    x: { type: "spring", stiffness: 300, damping: 30 },
+    x: { type: "spring" as const, stiffness: 300, damping: 30 },
     opacity: { duration: 0.2 }
   };
 
@@ -105,12 +106,16 @@ const Home: React.FC = () => {
     }
   };
 
+  // Fixed framer-motion ease type error by casting the array to a BezierDefinition tuple [number, number, number, number]
   const itemVariants = {
     hidden: { y: 30, opacity: 0 },
     visible: {
       y: 0,
       opacity: 1,
-      transition: { duration: 0.8, ease: [0.19, 1, 0.22, 1] }
+      transition: { 
+        duration: 0.8, 
+        ease: [0.19, 1, 0.22, 1] as [number, number, number, number] 
+      }
     }
   };
 
@@ -185,10 +190,11 @@ const Home: React.FC = () => {
             className="flex flex-col"
           >
             <div className="mb-6 md:mb-8 flex flex-col">
-              <motion.h1 style={{ x: heroTextXLeft }} className="text-6xl md:text-[8vw] font-display font-black uppercase tracking-tighter leading-[0.75] italic mb-0 whitespace-nowrap">
+              {/* Removed overflow-hidden wrappers to prevent text clipping */}
+              <motion.h1 style={{ x: heroTextXLeft }} className="text-6xl md:text-[8vw] font-display font-black uppercase tracking-tighter leading-[0.75] italic mb-0 whitespace-nowrap z-10">
                 {home.heroTitle.split(' ')[0]}
               </motion.h1>
-              <motion.h1 style={{ x: heroTextXRight }} className="text-6xl md:text-[8vw] font-display font-black uppercase tracking-tighter leading-[0.75] italic text-hollow whitespace-nowrap">
+              <motion.h1 style={{ x: heroTextXRight }} className="text-6xl md:text-[8vw] font-display font-black uppercase tracking-tighter leading-[0.75] italic text-hollow whitespace-nowrap z-10">
                 {home.heroSubTitle}
               </motion.h1>
             </div>
@@ -218,7 +224,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* Social Proof Bar */}
-      <section className="py-12 border-b border-gray-100 bg-gray-50 overflow-hidden hidden md:block">
+      <section className="py-6 md:py-10 border-b border-gray-100 bg-gray-50 overflow-hidden hidden md:block">
         <div className="max-w-7xl mx-auto px-6 flex flex-wrap justify-around items-center gap-12 grayscale opacity-30">
            {(home.clients || []).slice(0, 4).map((client, i) => (
              <span key={i} className="font-display font-black uppercase tracking-[0.3em] text-xl">{client.name}</span>
@@ -237,7 +243,7 @@ const Home: React.FC = () => {
       {/* Philosophy Kinetic Section */}
       <section 
         ref={philosophyRef}
-        className="py-44 md:py-64 bg-dark text-white relative overflow-hidden flex items-center justify-center"
+        className="py-16 md:py-24 bg-dark text-white relative overflow-hidden flex items-center justify-center"
       >
         <motion.div 
           style={{ x: kineticBgX }}
@@ -260,8 +266,8 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Service Teasers (Slider implemented here) */}
-      <section className="py-24 md:py-40 px-6 max-w-7xl mx-auto flex flex-col lg:flex-row gap-20">
+      {/* Service Teasers */}
+      <section className="pt-12 md:pt-16 pb-8 md:pb-12 px-6 max-w-7xl mx-auto flex flex-col lg:flex-row gap-12 md:gap-20">
         <motion.div initial={{ opacity: 0, scale: 0.98 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 0.8 }} className="flex-1 relative group">
           <div className="relative w-full aspect-[4/5] bg-gray-50 overflow-hidden shadow-2xl touch-pan-y">
              <AnimatePresence mode="popLayout" initial={false} custom={serviceDirection}>
@@ -300,12 +306,12 @@ const Home: React.FC = () => {
           </div>
         </motion.div>
         
-        <motion.div variants={containerVariants} initial="hidden" whileInView="visible" viewport={{ once: true }} className="flex-1 space-y-20 py-10">
+        <motion.div variants={containerVariants} initial="hidden" whileInView="visible" viewport={{ once: true }} className="flex-1 space-y-12 md:space-y-16 py-6 md:py-10">
           {home.services.map((item, i) => (
             <motion.div key={i} variants={itemVariants} className="max-w-md group cursor-default">
-              <motion.div whileInView={{ width: '80px' }} initial={{ width: 0 }} className="h-1.5 bg-dark mb-8 origin-left" />
-              <h3 className="text-lg font-black uppercase tracking-[0.3em] mb-5 group-hover:text-accent transition-colors">{item.title}</h3>
-              <p className="text-gray-500 text-sm md:text-base mb-8 leading-relaxed font-medium">{item.desc}</p>
+              <motion.div whileInView={{ width: '80px' }} initial={{ width: 0 }} className="h-1.5 bg-dark mb-6 md:mb-8 origin-left" />
+              <h3 className="text-lg font-black uppercase tracking-[0.3em] mb-4 md:mb-5 group-hover:text-accent transition-colors">{item.title}</h3>
+              <p className="text-gray-500 text-sm md:text-base mb-6 md:mb-8 leading-relaxed font-medium">{item.desc}</p>
               <Link to="/services" className="text-[10px] font-black uppercase tracking-[0.5em] border-b-2 border-gray-100 hover:border-dark pb-3 inline-flex items-center transition-all group-hover:pl-4">
                 EXPLORE <ArrowRight className="ml-4 w-4 h-4 transition-transform group-hover:translate-x-2" />
               </Link>
@@ -314,23 +320,23 @@ const Home: React.FC = () => {
         </motion.div>
       </section>
 
-      {/* About Section */}
-      <section className="py-24 md:py-44 bg-white px-6 overflow-hidden border-b border-gray-50">
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-20 md:gap-32">
+      {/* About Section (The Man Behind The Content) */}
+      <section className="pt-6 md:pt-10 pb-16 md:pb-24 bg-white px-6 overflow-hidden border-b border-gray-50">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-12 md:gap-32">
           <div className="flex-1 relative">
              <motion.div initial={{ x: -100, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} viewport={{ once: true }} transition={{ duration: 1 }} className="aspect-[4/5] bg-gray-50 overflow-hidden relative shadow-2xl gpu-accelerated">
                <img src={home.aboutImage || "https://images.unsplash.com/photo-1552058544-f2b08422138a?q=80&w=1998&auto=format&fit=crop"} alt="About" className="w-full h-full object-cover transition-all duration-700 hover:scale-105 grayscale hover:grayscale-0 transform-gpu" loading="lazy" />
              </motion.div>
           </div>
           <div className="flex-1 flex flex-col justify-center">
-             <motion.h2 initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} className="text-5xl md:text-6xl font-display font-black uppercase tracking-tighter mb-10 md:mb-14 leading-[0.9]">
+             <motion.h2 initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} className="text-5xl md:text-6xl font-display font-black uppercase tracking-tighter mb-8 md:mb-14 leading-[0.9]">
                {home.aboutTitle}
              </motion.h2>
-             <div className="space-y-8 text-gray-500 text-base md:text-lg leading-relaxed mb-14 max-w-lg font-medium">
+             <div className="space-y-6 md:space-y-8 text-gray-500 text-base md:text-lg leading-relaxed mb-10 md:mb-14 max-w-lg font-medium">
                {home.aboutText.map((p, i) => <p key={i}>{p}</p>)}
              </div>
              
-             <div className="grid grid-cols-3 gap-8 md:gap-16 border-t border-gray-100 pt-16">
+             <div className="grid grid-cols-3 gap-8 md:gap-16 border-t border-gray-100 pt-10 md:pt-16">
                {home.stats.map((stat, i) => (
                  <motion.div key={i} whileHover={{ y: -8 }} className="group">
                     <div className="flex items-center space-x-1 mb-3">
@@ -346,8 +352,8 @@ const Home: React.FC = () => {
 
       {/* Work Clients Section */}
       <section className="bg-white border-b border-gray-100">
-        <div className="w-full border-t border-b border-dark/10 py-10 md:py-14 text-center">
-          <h2 className="text-3xl md:text-6xl font-display font-black uppercase tracking-[0.15em] text-dark leading-none italic">
+        <div className="w-full border-t border-b border-dark/10 py-8 md:py-14 text-center">
+          <h2 className="text-2xl md:text-6xl font-display font-black uppercase tracking-[0.15em] text-dark leading-none italic">
             I WORK WITH INCREDIBLE BRANDS
           </h2>
         </div>
@@ -362,7 +368,7 @@ const Home: React.FC = () => {
 
       {/* Footer CTA */}
       <Link to="/contact" className="block relative group overflow-hidden">
-         <motion.div whileHover={{ backgroundColor: 'var(--accent-color)', color: '#000000' }} className="bg-dark text-white py-20 md:py-32 text-center transition-colors duration-500">
+         <motion.div whileHover={{ backgroundColor: 'var(--accent-color)', color: '#000000' }} className="bg-dark text-white py-16 md:py-24 text-center transition-colors duration-500">
            <motion.div className="text-3xl sm:text-4xl md:text-7xl font-display font-black uppercase tracking-tighter inline-flex items-center italic px-4" initial={{ x: 0 }} whileHover={{ x: 30 }}>
              LET'S WORK TOGETHER <ArrowRight className="ml-6 md:ml-12 w-10 h-10 md:w-16 md:h-16" />
            </motion.div>
