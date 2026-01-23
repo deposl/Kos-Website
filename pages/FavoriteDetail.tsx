@@ -22,13 +22,13 @@ const FavoriteDetail: React.FC = () => {
   }
 
   return (
-    <div className="pt-24 md:pt-36 pb-20 bg-white min-h-screen">
-      <div className="max-w-6xl mx-auto px-4 pt-12">
+    <div className="pt-24 md:pt-36 pb-20 bg-white min-h-screen overflow-x-hidden">
+      <div className="max-w-6xl mx-auto px-6 pt-12">
         <Link to="/favorites" className="inline-flex items-center text-xs font-black uppercase tracking-[0.3em] mb-12 group">
           <ArrowLeft className="mr-2 w-4 h-4 group-hover:-translate-x-2 transition-transform" /> Back to Curated List
         </Link>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
           {/* Visual Side */}
           <motion.div 
             initial={{ opacity: 0, x: -30 }}
@@ -38,9 +38,9 @@ const FavoriteDetail: React.FC = () => {
             <div className="aspect-square bg-gray-50 rounded-sm overflow-hidden shadow-2xl border border-gray-100">
               <img src={item.img} alt={item.name} className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />
             </div>
-            <div className="absolute -bottom-6 -right-6 bg-accent text-dark p-8 rounded-sm shadow-2xl flex flex-col items-center">
+            <div className="absolute -bottom-6 -right-6 bg-accent text-dark p-6 md:p-8 rounded-sm shadow-2xl flex flex-col items-center">
                <span className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-1">Promo Code</span>
-               <span className="text-2xl font-display font-black uppercase italic tracking-tighter">{item.code}</span>
+               <span className="text-xl md:text-2xl font-display font-black uppercase italic tracking-tighter">{item.code}</span>
             </div>
           </motion.div>
 
@@ -55,12 +55,12 @@ const FavoriteDetail: React.FC = () => {
                 <ShieldCheck size={18} />
                 <span className="text-xs font-black uppercase tracking-[0.3em]">Verified Creator Gear</span>
               </div>
-              <h1 className="text-5xl md:text-7xl font-display font-black uppercase italic tracking-tighter leading-none mb-6">
+              <h1 className="text-4xl md:text-7xl font-display font-black uppercase italic tracking-tighter leading-none mb-6 break-words">
                 {item.name}
               </h1>
-              <p className="text-xl text-gray-500 font-medium leading-relaxed" style={{ fontSize: 'var(--font-body)' }}>
+              <div className="prose prose-stone prose-sm md:prose-base lg:prose-lg max-w-none text-gray-500 font-medium leading-relaxed break-words">
                 {item.desc}
-              </p>
+              </div>
             </div>
 
             <div className="bg-gray-50 p-8 border border-gray-100 rounded-sm space-y-6">

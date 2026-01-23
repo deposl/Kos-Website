@@ -10,8 +10,8 @@ const BlogList: React.FC = () => {
   const blogs = content.blogs || [];
 
   return (
-    <div className="pt-24 md:pt-36 pb-20 bg-white min-h-screen">
-      <div className="max-w-7xl mx-auto px-4">
+    <div className="pt-24 md:pt-36 pb-20 bg-white min-h-screen overflow-x-hidden">
+      <div className="max-w-7xl mx-auto px-6">
         <div className="mb-24 pt-12 md:pt-16">
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
@@ -25,7 +25,7 @@ const BlogList: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
           {blogs.map((post, idx) => (
             <motion.article
               key={post.id}
@@ -33,7 +33,7 @@ const BlogList: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: idx * 0.1 }}
-              className="group"
+              className="group w-full"
             >
               <Link to={`/blog/${post.id}`} className="block overflow-hidden rounded-sm bg-[#f8f8f8] border border-gray-100 mb-8 aspect-video relative">
                 {post.image ? (
@@ -52,11 +52,11 @@ const BlogList: React.FC = () => {
               </Link>
               <div className="space-y-4">
                 <Link to={`/blog/${post.id}`}>
-                  <h2 className="text-3xl font-display font-black uppercase tracking-tighter leading-tight group-hover:text-accent transition-colors">
+                  <h2 className="text-3xl font-display font-black uppercase tracking-tighter leading-tight group-hover:text-accent transition-colors break-words">
                     {post.title}
                   </h2>
                 </Link>
-                <p className="text-gray-500 text-base leading-relaxed line-clamp-2">
+                <p className="text-gray-500 text-base leading-relaxed line-clamp-2 whitespace-normal break-words">
                   {post.excerpt}
                 </p>
                 <Link to={`/blog/${post.id}`} className="inline-flex items-center text-xs font-black uppercase tracking-[0.3em] group/btn">

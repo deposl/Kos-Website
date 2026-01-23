@@ -22,13 +22,13 @@ const BlogPost: React.FC = () => {
   }
 
   return (
-    <div className="pt-24 md:pt-36 pb-20 bg-white min-h-screen">
-      <article className="max-w-4xl mx-auto px-4 pt-12 md:pt-16">
+    <div className="pt-24 md:pt-36 pb-20 bg-white min-h-screen overflow-x-hidden">
+      <article className="max-w-4xl mx-auto px-6 pt-12 md:pt-16 w-full">
         <Link to="/blog" className="inline-flex items-center text-xs font-black uppercase tracking-[0.3em] mb-12 group">
           <ArrowLeft className="mr-2 w-4 h-4 group-hover:-translate-x-2 transition-transform" /> Back to Journal
         </Link>
 
-        <header className="mb-16">
+        <header className="mb-12 md:mb-16">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -45,7 +45,7 @@ const BlogPost: React.FC = () => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-5xl md:text-7xl font-display font-black uppercase italic tracking-tighter leading-[0.9] mb-12"
+            className="text-4xl sm:text-5xl md:text-7xl font-display font-black uppercase italic tracking-tighter leading-[0.9] mb-12 break-words"
           >
             {post.title}
           </motion.h1>
@@ -61,15 +61,16 @@ const BlogPost: React.FC = () => {
           )}
         </header>
 
-        {/* Render HTML content from Quill Editor */}
+        {/* Render HTML content with responsive typography and forced wrapping */}
         <div 
-          className="prose prose-xl prose-stone max-w-none text-gray-700 font-medium leading-relaxed 
+          className="prose prose-stone max-w-none text-gray-700 font-medium leading-relaxed w-full break-words
+          prose-sm sm:prose-base md:prose-lg lg:prose-xl
           prose-headings:font-display prose-headings:font-black prose-headings:uppercase prose-headings:tracking-tighter prose-headings:italic
           prose-img:rounded-sm prose-img:shadow-2xl prose-a:text-accent"
           dangerouslySetInnerHTML={{ __html: post.content }}
         />
 
-        <footer className="mt-20 pt-12 border-t border-gray-100 flex justify-between items-center">
+        <footer className="mt-20 pt-12 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-8">
           <div className="flex space-x-6">
              <button className="flex items-center space-x-2 text-xs font-black uppercase tracking-widest hover:text-accent transition-colors">
                <Share2 className="w-4 h-4" /> <span>Share Article</span>
