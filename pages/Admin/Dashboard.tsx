@@ -5,13 +5,14 @@ import { useSite } from '../../contexts/SiteContext';
 import ReactQuill from 'react-quill-new';
 import { createClient } from '@supabase/supabase-js';
 import { 
-  Save, Layout, ClipboardList, Palette, FileText, MoveUp, 
-  Loader2, Database, Trash2, Activity, RefreshCw,
-  Check, Terminal, XCircle, Copy, Upload, ArrowUp, ArrowDown, Plus, Image as ImageIcon,
-  Star, Heart, Briefcase, Share2, Type, Globe, Shield, User, Building2, Facebook, Instagram, Youtube, Linkedin, Twitter,
-  Mail, MessageSquare, Inbox
+  Save, Layout, Palette, FileText, MoveUp, 
+  Loader2, Database, Trash2, RefreshCw,
+  Check, Terminal, Copy, Upload, ArrowUp, ArrowDown, Plus, Image as ImageIcon,
+  Star, Heart, Briefcase, Share2, Type, Globe, Shield, 
+  Mail, MessageSquare, ChevronLeft, Edit3,
+  Instagram, Youtube, Twitter, Linkedin, Facebook, User
 } from 'lucide-react';
-import { BlogPost, NavLink, FavoriteItem, SEOConfig, ClientBrand } from '../../types';
+import { BlogPost, FavoriteItem, SEOConfig } from '../../types';
 
 const SQL_SCHEMA = `-- SUPABASE DATABASE SETUP SCRIPT (V7 - Final Leads & Persistence)
 -- Copy and run this in your Supabase SQL Editor.
@@ -81,7 +82,6 @@ ALTER TABLE subscribers DISABLE ROW LEVEL SECURITY;
 ALTER TABLE inquiries DISABLE ROW LEVEL SECURITY;
 `;
 
-// Types for new tables
 interface Inquiry {
   id: string;
   name: string;
@@ -97,7 +97,6 @@ interface Subscriber {
   created_at: string;
 }
 
-// Quill Modules Configuration
 const quillModules = {
   toolbar: [
     [{ 'header': [1, 2, 3, false] }],
@@ -115,7 +114,6 @@ const quillFormats = [
   'link', 'image', 'video'
 ];
 
-// Helper for Base64 conversion
 const fileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -309,6 +307,9 @@ const AdminDashboard: React.FC = () => {
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [isDataFetching, setIsDataFetching] = useState(false);
 
+  // For Blog Post Editing
+  const [editingBlogId, setEditingBlogId] = useState<string | null>(null);
+
   useEffect(() => {
     setLocalContent(content);
   }, [content]);
@@ -354,13 +355,6 @@ const AdminDashboard: React.FC = () => {
       console.error('Delete error:', e);
     }
   };
-
-  if (isGlobalLoading) return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center space-y-4">
-      <Loader2 className="animate-spin text-accent" size={48} />
-      <p className="text-white text-[10px] font-black uppercase tracking-[0.5em] animate-pulse">Initializing Console</p>
-    </div>
-  );
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -409,7 +403,7 @@ const AdminDashboard: React.FC = () => {
     updateSection('branding', { socialLinks: { ...currentSocials, ...updates } });
   };
 
-  const moveItem = (listKey: 'navLinks' | 'favorites', index: number, direction: 'up' | 'down') => {
+  const moveItem = (listKey: 'navLinks' | 'favorites' | 'blogs', index: number, direction: 'up' | 'down') => {
     const newList = [...(localContent[listKey] || [])];
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
     if (targetIndex >= 0 && targetIndex < newList.length) {
@@ -417,6 +411,13 @@ const AdminDashboard: React.FC = () => {
       updateSection(listKey, newList);
     }
   };
+
+  if (isGlobalLoading) return (
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center space-y-4">
+      <Loader2 className="animate-spin text-accent" size={48} />
+      <p className="text-white text-[10px] font-black uppercase tracking-[0.5em] animate-pulse">Initializing Console</p>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-[#050505] text-white pt-44 pb-20 font-sans">
@@ -427,7 +428,7 @@ const AdminDashboard: React.FC = () => {
             <h1 className="text-5xl font-display font-black uppercase italic tracking-tighter leading-none">
               COMMAND <span className="text-accent">CENTER</span>
             </h1>
-            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.4em] mt-3">CMS ARCHITECTURE V12.0 (PERSISTENCE FIX)</p>
+            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.4em] mt-3">CMS ARCHITECTURE V12.0 (FEATURE RESTORED)</p>
           </div>
           <div className="flex space-x-4 w-full md:w-auto">
             <button 
@@ -462,7 +463,7 @@ const AdminDashboard: React.FC = () => {
             ))}
           </div>
 
-          <div className="flex-grow bg-[#0A0A0A] border border-white/5 p-8 md:p-12 rounded-sm min-h-[700px] shadow-2xl overflow-hidden">
+          <div className="flex-grow bg-[#0A0A0A] border border-white/5 p-8 md:p-12 rounded-sm min-h-[700px] shadow-2xl overflow-hidden relative">
             
             {activeTab === 'branding' && (
               <div className="space-y-10">
@@ -479,7 +480,6 @@ const AdminDashboard: React.FC = () => {
                     </div>
                   </div>
                   
-                  {/* Favicon Upload */}
                   <div className="md:col-span-2 mt-4">
                     <ImageUploadField 
                       label="Browser Favicon (Ideal: 32x32px or 64x64px Square)" 
@@ -518,26 +518,9 @@ const AdminDashboard: React.FC = () => {
                       </div>
                    </div>
                 </div>
-
-                <div className="mt-16 pt-10 border-t border-white/5">
-                   <div className="flex items-center gap-3 text-red-500 mb-8">
-                      <Shield size={20} />
-                      <h3 className="text-xl font-display font-black uppercase italic tracking-tighter">Security Protocol</h3>
-                   </div>
-                   <div className="max-w-md">
-                      <InputField 
-                        type="password"
-                        label="Master Access Key" 
-                        placeholder="Current access key"
-                        value={localContent.branding.adminKey || ''} 
-                        onChange={(v) => updateSection('branding', { adminKey: v })} 
-                      />
-                   </div>
-                </div>
               </div>
             )}
 
-            {/* Other tabs remain identical... */}
             {activeTab === 'navigation' && (
               <div className="space-y-10">
                 <div className="flex justify-between items-center">
@@ -574,22 +557,8 @@ const AdminDashboard: React.FC = () => {
                 <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">Home Page</h3>
                 <SEOEditor config={localContent.home.seo} onChange={(v) => updateSection('home', { seo: v })} />
                 
+                {/* Hero Configuration */}
                 <section className="space-y-8 pt-8 border-t border-white/5">
-                  <div className="flex items-center gap-3 text-accent/60 mb-4">
-                    <Type size={18} />
-                    <h4 className="text-[10px] font-black uppercase tracking-widest">Brand Phrases & Kinetic Text</h4>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <InputField label="Hero Watermark (@SEVSPICS)" value={localContent.home.heroWatermark} onChange={(v) => updateSection('home', { heroWatermark: v })} />
-                    <InputField label="Hero Status Badge (Viral Design Mode)" value={localContent.home.heroMood} onChange={(v) => updateSection('home', { heroMood: v })} />
-                    <InputField label="Philosophy Line 1 (I DON'T MAKE ADS.)" value={localContent.home.philosophyLine1} onChange={(v) => updateSection('home', { philosophyLine1: v })} />
-                    <InputField label="Philosophy Line 2 (I DESIGN STORIES.)" value={localContent.home.philosophyLine2} onChange={(v) => updateSection('home', { philosophyLine2: v })} />
-                    <InputField label="Service Teaser Card Title (THE NEXUS)" value={localContent.home.serviceCardTitle} onChange={(v) => updateSection('home', { serviceCardTitle: v })} />
-                    <InputField label="Service Teaser Card Label (Apply Now)" value={localContent.home.serviceCardLabel} onChange={(v) => updateSection('home', { serviceCardLabel: v })} />
-                  </div>
-                </section>
-
-                <section className="space-y-8 pt-12 border-t border-white/5">
                   <div className="flex items-center gap-3 text-accent/60 mb-4">
                     <Layout size={18} />
                     <h4 className="text-[10px] font-black uppercase tracking-widest">Hero Configuration</h4>
@@ -600,20 +569,412 @@ const AdminDashboard: React.FC = () => {
                     <div className="md:col-span-2">
                       <TextAreaField label="Description" value={localContent.home.heroDescription} onChange={(v) => updateSection('home', { heroDescription: v })} />
                     </div>
+                    <InputField label="Hero Watermark (@SEVSPICS)" value={localContent.home.heroWatermark} onChange={(v) => updateSection('home', { heroWatermark: v })} />
+                    <InputField label="Hero Status Badge (Viral Design Mode)" value={localContent.home.heroMood} onChange={(v) => updateSection('home', { heroMood: v })} />
                     <div className="md:col-span-2 pt-8 space-y-12">
                       <MultiImageManager 
                         label="Hero Header Slider"
                         images={localContent.home.heroImages || [localContent.home.heroImage]} 
                         onChange={(v) => updateSection('home', { heroImages: v })} 
                       />
-                      <MultiImageManager 
-                        label="Service Section Slider"
+                    </div>
+                  </div>
+                </section>
+
+                {/* Kinetic Typography */}
+                <section className="space-y-8 pt-12 border-t border-white/5">
+                  <div className="flex items-center gap-3 text-accent/60 mb-4">
+                    <Type size={18} />
+                    <h4 className="text-[10px] font-black uppercase tracking-widest">Kinetic Text / Philosophy</h4>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <InputField label="Philosophy Line 1 (I DON'T MAKE ADS.)" value={localContent.home.philosophyLine1} onChange={(v) => updateSection('home', { philosophyLine1: v })} />
+                    <InputField label="Philosophy Line 2 (I DESIGN STORIES.)" value={localContent.home.philosophyLine2} onChange={(v) => updateSection('home', { philosophyLine2: v })} />
+                  </div>
+                </section>
+
+                {/* About Section - NEWLY ADDED */}
+                <section className="space-y-8 pt-12 border-t border-white/5">
+                  <div className="flex items-center gap-3 text-accent/60 mb-4">
+                    <User size={18} />
+                    <h4 className="text-[10px] font-black uppercase tracking-widest">About Section (The Man Behind...)</h4>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <InputField label="Section Title" value={localContent.home.aboutTitle} onChange={(v) => updateSection('home', { aboutTitle: v })} />
+                    <ImageUploadField label="About Photo" value={localContent.home.aboutImage} onChange={(v) => updateSection('home', { aboutImage: v })} />
+                    <div className="md:col-span-2">
+                       <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 mb-2 block">Body Text Paragraphs (One per line)</label>
+                       <textarea 
+                        className="w-full bg-white/5 border border-white/10 p-4 rounded-sm text-sm text-white font-medium focus:border-accent outline-none min-h-[150px]"
+                        value={(localContent.home.aboutText || []).join('\n')}
+                        onChange={(e) => updateSection('home', { aboutText: e.target.value.split('\n') })}
+                       />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                     <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Performance Stats</label>
+                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {(localContent.home.stats || []).map((stat, sIdx) => (
+                          <div key={sIdx} className="bg-white/5 border border-white/5 p-4 rounded-sm space-y-3">
+                             <InputField label="Value (e.g. 1.6M)" value={stat.value} onChange={(v) => {
+                               const newStats = [...localContent.home.stats];
+                               newStats[sIdx].value = v;
+                               updateSection('home', { stats: newStats });
+                             }} />
+                             <InputField label="Label (e.g. Followers)" value={stat.label} onChange={(v) => {
+                               const newStats = [...localContent.home.stats];
+                               newStats[sIdx].label = v;
+                               updateSection('home', { stats: newStats });
+                             }} />
+                          </div>
+                        ))}
+                     </div>
+                  </div>
+                </section>
+
+                {/* Service Teaser - NEWLY ADDED */}
+                <section className="space-y-8 pt-12 border-t border-white/5">
+                  <div className="flex items-center gap-3 text-accent/60 mb-4">
+                    <Briefcase size={18} />
+                    <h4 className="text-[10px] font-black uppercase tracking-widest">Home Service Teaser</h4>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <InputField label="Teaser Card Title" value={localContent.home.serviceCardTitle} onChange={(v) => updateSection('home', { serviceCardTitle: v })} />
+                    <InputField label="Teaser Card Link Label" value={localContent.home.serviceCardLabel} onChange={(v) => updateSection('home', { serviceCardLabel: v })} />
+                    <div className="md:col-span-2">
+                       <MultiImageManager 
+                        label="Service Teaser Image Gallery"
                         images={localContent.home.serviceImages || []} 
                         onChange={(v) => updateSection('home', { serviceImages: v })} 
                       />
                     </div>
                   </div>
+                  <div className="space-y-4 pt-4">
+                     <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Home Service Bulletins</label>
+                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {(localContent.home.services || []).map((svc, svcIdx) => (
+                          <div key={svcIdx} className="bg-white/5 border border-white/5 p-4 rounded-sm space-y-3">
+                             <InputField label="Title" value={svc.title} onChange={(v) => {
+                               const n = [...localContent.home.services]; n[svcIdx].title = v; updateSection('home', { services: n });
+                             }} />
+                             <TextAreaField label="Description" value={svc.desc} onChange={(v) => {
+                               const n = [...localContent.home.services]; n[svcIdx].desc = v; updateSection('home', { services: n });
+                             }} />
+                          </div>
+                        ))}
+                     </div>
+                  </div>
                 </section>
+
+                {/* Brands/Clients - NEWLY ADDED */}
+                <section className="space-y-8 pt-12 border-t border-white/5">
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="flex items-center gap-3 text-accent/60">
+                      <Star size={18} />
+                      <h4 className="text-[10px] font-black uppercase tracking-widest">Incredible Brands / Clients</h4>
+                    </div>
+                    <button 
+                      onClick={() => updateSection('home', { clients: [...(localContent.home.clients || []), { name: 'New Client', logo: '' }] })}
+                      className="bg-accent text-dark px-4 py-2 text-[9px] font-black uppercase rounded-sm flex items-center gap-2"
+                    >
+                      <Plus size={12} /> Add Brand
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                     {(localContent.home.clients || []).map((client, cIdx) => (
+                       <div key={cIdx} className="bg-white/5 border border-white/10 p-4 rounded-sm relative group">
+                          <button 
+                            onClick={() => {
+                              const n = [...localContent.home.clients]; n.splice(cIdx, 1); updateSection('home', { clients: n });
+                            }} 
+                            className="absolute top-2 right-2 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                          <ImageUploadField label="Logo" value={client.logo} onChange={(v) => {
+                            const n = [...localContent.home.clients]; n[cIdx].logo = v; updateSection('home', { clients: n });
+                          }} className="mb-4" />
+                          <InputField label="Brand Name" value={client.name} onChange={(v) => {
+                            const n = [...localContent.home.clients]; n[cIdx].name = v; updateSection('home', { clients: n });
+                          }} />
+                       </div>
+                     ))}
+                  </div>
+                </section>
+              </div>
+            )}
+
+            {activeTab === 'services' && (
+              <div className="space-y-12">
+                <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">Services Module</h3>
+                <SEOEditor config={localContent.services.seo} onChange={(v) => updateSection('services', { seo: v })} />
+                
+                <section className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-white/5">
+                  <InputField label="Header Label" value={localContent.services.headerLabel} onChange={(v) => updateSection('services', { headerLabel: v })} />
+                  <InputField label="Header Title" value={localContent.services.headerTitle} onChange={(v) => updateSection('services', { headerTitle: v })} />
+                  <div className="md:col-span-2">
+                    <TextAreaField label="Header Description" value={localContent.services.headerDescription} onChange={(v) => updateSection('services', { headerDescription: v })} />
+                  </div>
+                </section>
+
+                <section className="pt-12 border-t border-white/5">
+                  <div className="flex justify-between items-center mb-8">
+                    <h4 className="text-xl font-display font-black uppercase tracking-tighter italic">Service Blocks</h4>
+                    <button 
+                      onClick={() => updateSection('services', { serviceBlocks: [...(localContent.services.serviceBlocks || []), { title: 'New Service', items: ['Sample Feature'] }] })}
+                      className="bg-accent text-dark px-4 py-2 text-[9px] font-black uppercase rounded-sm"
+                    >
+                      + Add Block
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {(localContent.services.serviceBlocks || []).map((block, bIdx) => (
+                      <div key={bIdx} className="bg-white/5 border border-white/5 p-6 rounded-sm relative">
+                        <button 
+                          onClick={() => {
+                            const newBlocks = [...localContent.services.serviceBlocks];
+                            newBlocks.splice(bIdx, 1);
+                            updateSection('services', { serviceBlocks: newBlocks });
+                          }}
+                          className="absolute top-4 right-4 text-red-500 hover:text-red-400"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                        <InputField label="Block Title" value={block.title} onChange={(v) => {
+                           const newBlocks = [...localContent.services.serviceBlocks];
+                           newBlocks[bIdx].title = v;
+                           updateSection('services', { serviceBlocks: newBlocks });
+                        }} />
+                        <div className="mt-4">
+                          <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 mb-2 block">Bullet Points (one per line)</label>
+                          <textarea 
+                            className="w-full bg-black/40 border border-white/10 p-4 rounded-sm text-sm text-white font-medium focus:border-accent outline-none"
+                            value={block.items.join('\n')}
+                            onChange={(e) => {
+                               const newBlocks = [...localContent.services.serviceBlocks];
+                               newBlocks[bIdx].items = e.target.value.split('\n');
+                               updateSection('services', { serviceBlocks: newBlocks });
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              </div>
+            )}
+
+            {activeTab === 'endorsements' && (
+              <div className="space-y-12">
+                <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">Endorsements Module</h3>
+                <SEOEditor config={localContent.endorsements.seo} onChange={(v) => updateSection('endorsements', { seo: v })} />
+                
+                <section className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-white/5">
+                  <div className="space-y-8">
+                    <InputField label="Header Title" value={localContent.endorsements.headerTitle} onChange={(v) => updateSection('endorsements', { headerTitle: v })} />
+                    <TextAreaField label="Header Description" value={localContent.endorsements.headerDescription} onChange={(v) => updateSection('endorsements', { headerDescription: v })} />
+                  </div>
+                  <ImageUploadField label="Feature Image" value={localContent.endorsements.mainImage} onChange={(v) => updateSection('endorsements', { mainImage: v })} />
+                </section>
+
+                <section className="pt-12 border-t border-white/5">
+                  <div className="flex justify-between items-center mb-8">
+                    <h4 className="text-xl font-display font-black uppercase tracking-tighter italic">Partnership Options</h4>
+                    <button 
+                      onClick={() => updateSection('endorsements', { options: [...(localContent.endorsements.options || []), { title: 'New Deal', desc: 'Sample description.' }] })}
+                      className="bg-accent text-dark px-4 py-2 text-[9px] font-black uppercase rounded-sm"
+                    >
+                      + Add Option
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {(localContent.endorsements.options || []).map((opt, oIdx) => (
+                      <div key={oIdx} className="bg-white/5 border border-white/5 p-6 rounded-sm relative">
+                        <button onClick={() => {
+                          const newOpts = [...localContent.endorsements.options];
+                          newOpts.splice(oIdx, 1);
+                          updateSection('endorsements', { options: newOpts });
+                        }} className="absolute top-4 right-4 text-red-500"><Trash2 size={14} /></button>
+                        <InputField label="Title" value={opt.title} onChange={(v) => {
+                          const n = [...localContent.endorsements.options]; n[oIdx].title = v; updateSection('endorsements', { options: n });
+                        }} />
+                        <div className="mt-4">
+                          <TextAreaField label="Description" value={opt.desc} onChange={(v) => {
+                            const n = [...localContent.endorsements.options]; n[oIdx].desc = v; updateSection('endorsements', { options: n });
+                          }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              </div>
+            )}
+
+            {activeTab === 'favorites' && (
+              <div className="space-y-12">
+                <div className="flex justify-between items-center">
+                   <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">Creator Gear & Favorites</h3>
+                   <button 
+                     onClick={() => updateSection('favorites', [{ id: crypto.randomUUID(), name: 'New Item', desc: '', code: 'DEAL10', img: '' }, ...(localContent.favorites || [])])}
+                     className="bg-accent text-dark px-6 py-3 rounded-sm font-black uppercase text-xs tracking-widest flex items-center gap-2"
+                   >
+                     <Plus size={16} /> Add New Gear
+                   </button>
+                </div>
+                
+                <SEOEditor config={localContent.favorites_seo} onChange={(v) => updateSection('favorites_seo', v)} />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {(localContent.favorites || []).map((item, idx) => (
+                    <div key={item.id} className="bg-white/5 border border-white/10 p-8 rounded-sm group relative">
+                       <div className="flex flex-col md:flex-row gap-6">
+                          <div className="w-full md:w-32">
+                             <ImageUploadField label="Image" value={item.img} onChange={(v) => {
+                               const n = [...localContent.favorites]; n[idx].img = v; updateSection('favorites', n);
+                             }} />
+                          </div>
+                          <div className="flex-grow space-y-4">
+                             <InputField label="Gear Name" value={item.name} onChange={(v) => {
+                               const n = [...localContent.favorites]; n[idx].name = v; updateSection('favorites', n);
+                             }} />
+                             <InputField label="Promo Code" value={item.code} onChange={(v) => {
+                               const n = [...localContent.favorites]; n[idx].code = v; updateSection('favorites', n);
+                             }} />
+                          </div>
+                       </div>
+                       <div className="mt-4">
+                          <TextAreaField label="Recommendation Detail" value={item.desc} onChange={(v) => {
+                            const n = [...localContent.favorites]; n[idx].desc = v; updateSection('favorites', n);
+                          }} />
+                       </div>
+                       <div className="flex justify-between items-center mt-6 pt-6 border-t border-white/5">
+                          <div className="flex gap-2">
+                             <button onClick={() => moveItem('favorites', idx, 'up')} disabled={idx === 0} className="p-2 hover:text-accent disabled:opacity-10"><ArrowUp size={14}/></button>
+                             <button onClick={() => moveItem('favorites', idx, 'down')} disabled={idx === localContent.favorites.length - 1} className="p-2 hover:text-accent disabled:opacity-10"><ArrowDown size={14}/></button>
+                          </div>
+                          <button onClick={() => updateSection('favorites', localContent.favorites.filter(f => f.id !== item.id))} className="text-red-500 font-black uppercase text-[9px] flex items-center gap-1 hover:brightness-125">
+                            <Trash2 size={12} /> Delete Entry
+                          </button>
+                       </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'blogs' && (
+              <div className="space-y-12">
+                {editingBlogId ? (
+                  <div className="space-y-8 animate-in fade-in duration-500">
+                    <button onClick={() => setEditingBlogId(null)} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-white transition-colors">
+                      <ChevronLeft size={16} /> Back to Archive
+                    </button>
+                    
+                    {(() => {
+                      const post = localContent.blogs.find(b => b.id === editingBlogId);
+                      if (!post) return null;
+                      const postIdx = localContent.blogs.findIndex(b => b.id === editingBlogId);
+
+                      return (
+                        <div className="space-y-10">
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">Edit Journal Entry</h3>
+                            <button onClick={() => setEditingBlogId(null)} className="bg-accent text-dark px-6 py-2 rounded-sm text-[10px] font-black uppercase">Finish Editing</button>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                             <div className="space-y-6">
+                               <InputField label="Article Title" value={post.title} onChange={(v) => {
+                                 const n = [...localContent.blogs]; n[postIdx].title = v; updateSection('blogs', n);
+                               }} />
+                               <InputField label="Publish Date" value={post.date} onChange={(v) => {
+                                 const n = [...localContent.blogs]; n[postIdx].date = v; updateSection('blogs', n);
+                               }} />
+                               <TextAreaField label="Excerpt / Summary" value={post.excerpt} onChange={(v) => {
+                                 const n = [...localContent.blogs]; n[postIdx].excerpt = v; updateSection('blogs', n);
+                               }} />
+                             </div>
+                             <ImageUploadField label="Featured Image" value={post.image} onChange={(v) => {
+                               const n = [...localContent.blogs]; n[postIdx].image = v; updateSection('blogs', n);
+                             }} />
+                          </div>
+
+                          <div className="space-y-2">
+                             <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Main Content (Rich Text)</label>
+                             <ReactQuill 
+                               theme="snow" 
+                               value={post.content || ''} 
+                               onChange={(v) => {
+                                 const n = [...localContent.blogs]; n[postIdx].content = v; updateSection('blogs', n);
+                               }} 
+                               modules={quillModules}
+                               formats={quillFormats}
+                             />
+                          </div>
+
+                          <div className="bg-white/5 p-8 rounded-sm space-y-6 border border-white/5">
+                             <h4 className="text-[10px] font-black uppercase tracking-widest text-accent">Article SEO Override</h4>
+                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                               <InputField label="Custom SEO Title" value={post.seo_title || ''} onChange={(v) => {
+                                 const n = [...localContent.blogs]; n[postIdx].seo_title = v; updateSection('blogs', n);
+                               }} />
+                               <TextAreaField label="Custom Meta Description" value={post.seo_description || ''} onChange={(v) => {
+                                 const n = [...localContent.blogs]; n[postIdx].seo_description = v; updateSection('blogs', n);
+                               }} />
+                             </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                ) : (
+                  <div className="space-y-10">
+                    <div className="flex justify-between items-center">
+                       <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">The Journal Archive</h3>
+                       <button 
+                         onClick={() => {
+                           const newId = crypto.randomUUID();
+                           updateSection('blogs', [{ id: newId, title: 'Draft Post', date: new Date().toISOString().split('T')[0], excerpt: '', content: '', image: '' }, ...(localContent.blogs || [])]);
+                           setEditingBlogId(newId);
+                         }}
+                         className="bg-accent text-dark px-6 py-3 rounded-sm font-black uppercase text-xs tracking-widest flex items-center gap-2"
+                       >
+                         <Plus size={16} /> New Article
+                       </button>
+                    </div>
+
+                    <SEOEditor config={localContent.blogs_seo} onChange={(v) => updateSection('blogs_seo', v)} />
+
+                    <div className="space-y-4">
+                       {(localContent.blogs || []).map((post, idx) => (
+                         <div key={post.id} className="bg-white/5 border border-white/5 p-6 rounded-sm flex items-center gap-6 group hover:bg-white/10 transition-colors">
+                            <div className="w-24 h-24 bg-black border border-white/10 rounded-sm overflow-hidden flex-shrink-0">
+                               {post.image ? <img src={post.image} className="w-full h-full object-cover grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 transition-all" /> : <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-800">NO IMG</div>}
+                            </div>
+                            <div className="flex-grow">
+                               <div className="flex items-center gap-2 text-[8px] font-black uppercase tracking-widest text-accent mb-1">
+                                  <span>{post.date}</span>
+                               </div>
+                               <h4 className="text-xl font-bold font-display uppercase italic tracking-tighter">{post.title}</h4>
+                               <p className="text-gray-500 text-xs line-clamp-1 mt-1">{post.excerpt}</p>
+                            </div>
+                            <div className="flex items-center gap-4">
+                               <div className="flex flex-col gap-1">
+                                  <button onClick={() => moveItem('blogs', idx, 'up')} disabled={idx === 0} className="p-1 hover:text-accent disabled:opacity-10"><ArrowUp size={14}/></button>
+                                  <button onClick={() => moveItem('blogs', idx, 'down')} disabled={idx === localContent.blogs.length - 1} className="p-1 hover:text-accent disabled:opacity-10"><ArrowDown size={14}/></button>
+                               </div>
+                               <button onClick={() => setEditingBlogId(post.id)} className="p-4 bg-white/5 rounded-full hover:bg-accent hover:text-dark transition-all"><Edit3 size={18}/></button>
+                               <button onClick={() => updateSection('blogs', localContent.blogs.filter(b => b.id !== post.id))} className="p-4 hover:text-red-500 transition-all"><Trash2 size={18}/></button>
+                            </div>
+                         </div>
+                       ))}
+                       {localContent.blogs.length === 0 && (
+                         <div className="text-center py-20 bg-white/5 border-2 border-dashed border-white/5 text-gray-700 font-black uppercase text-xs tracking-widest">Archive Empty. Write something meaningful.</div>
+                       )}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -695,13 +1056,24 @@ const AdminDashboard: React.FC = () => {
                       </pre>
                    </div>
                 </div>
+
+                <div className="mt-16 pt-10 border-t border-white/5">
+                   <div className="flex items-center gap-3 text-red-500 mb-8">
+                      <Shield size={20} />
+                      <h3 className="text-xl font-display font-black uppercase italic tracking-tighter">Security Protocol</h3>
+                   </div>
+                   <div className="max-w-md">
+                      <InputField 
+                        type="password"
+                        label="Master Access Key" 
+                        placeholder="Current access key"
+                        value={localContent.branding.adminKey || ''} 
+                        onChange={(v) => updateSection('branding', { adminKey: v })} 
+                      />
+                   </div>
+                </div>
               </div>
             )}
-            
-            {(['services', 'endorsements', 'favorites', 'blogs'].includes(activeTab)) && (
-              <div className="flex items-center justify-center h-full text-gray-500 uppercase font-black text-xs tracking-[0.5em]">Content Module Loaded</div>
-            )}
-
           </div>
         </div>
       </div>
