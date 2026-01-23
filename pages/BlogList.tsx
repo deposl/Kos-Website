@@ -10,13 +10,13 @@ const BlogList: React.FC = () => {
   const blogs = content.blogs || [];
 
   return (
-    <div className="pt-24 md:pt-36 pb-20 bg-white min-h-screen overflow-x-hidden">
+    <div className="pt-20 md:pt-28 pb-16 bg-white min-h-screen overflow-x-hidden">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="mb-24 pt-12 md:pt-16">
+        <div className="mb-16 pt-8 md:pt-12">
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-6xl md:text-9xl font-display font-black uppercase italic tracking-tighter leading-none mb-8"
+            className="text-6xl md:text-9xl font-display font-black uppercase italic tracking-tighter leading-none mb-6"
           >
             THE <span className="text-gray-200">JOURNAL</span>
           </motion.h1>
@@ -25,7 +25,7 @@ const BlogList: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-14">
           {blogs.map((post, idx) => (
             <motion.article
               key={post.id}
@@ -35,7 +35,7 @@ const BlogList: React.FC = () => {
               transition={{ delay: idx * 0.1 }}
               className="group w-full"
             >
-              <Link to={`/blog/${post.id}`} className="block overflow-hidden rounded-sm bg-[#f8f8f8] border border-gray-100 mb-8 aspect-video relative">
+              <Link to={`/blog/${post.id}`} className="block overflow-hidden rounded-sm bg-[#f8f8f8] border border-gray-100 mb-6 aspect-video relative">
                 {post.image ? (
                   <img 
                     src={post.image} 
@@ -45,12 +45,12 @@ const BlogList: React.FC = () => {
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-gray-200 italic font-black text-4xl">NO IMAGE</div>
                 )}
-                <div className="absolute top-6 left-6 flex items-center space-x-2 bg-white px-4 py-2 rounded-sm shadow-xl">
+                <div className="absolute top-4 left-4 flex items-center space-x-2 bg-white px-3 py-1.5 rounded-sm shadow-xl">
                   <Calendar className="w-3 h-3 text-accent" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">{post.date}</span>
+                  <span className="text-[9px] font-black uppercase tracking-widest">{post.date}</span>
                 </div>
               </Link>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <Link to={`/blog/${post.id}`}>
                   <h2 className="text-3xl font-display font-black uppercase tracking-tighter leading-tight group-hover:text-accent transition-colors break-words">
                     {post.title}
@@ -68,7 +68,7 @@ const BlogList: React.FC = () => {
         </div>
 
         {blogs.length === 0 && (
-          <div className="text-center py-20 bg-[#f8f8f8] rounded-sm border-2 border-dashed border-gray-100">
+          <div className="text-center py-16 bg-[#f8f8f8] rounded-sm border-2 border-dashed border-gray-100">
             <p className="text-gray-400 font-bold uppercase tracking-widest">No articles found. Check back later.</p>
           </div>
         )}

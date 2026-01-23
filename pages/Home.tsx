@@ -27,13 +27,11 @@ const Home: React.FC = () => {
     })
   };
 
-  // Fixed framer-motion transition type inference by using 'as const' on type property to satisfy AnimationGeneratorType
   const slideTransition = {
     x: { type: "spring" as const, stiffness: 300, damping: 30 },
     opacity: { duration: 0.2 }
   };
 
-  // Swipe logic constants
   const swipeConfidenceThreshold = 10000;
   const swipePower = (offset: number, velocity: number) => {
     return Math.abs(offset) * velocity;
@@ -89,10 +87,10 @@ const Home: React.FC = () => {
   const heroImgScale = useTransform(scrollY, [0, 800], [1, 1.15]);
   const heroBgTextX = useTransform(scrollY, [0, 1000], [0, -300]);
 
-  // Philosophy Kinetic Scroll
-  const rawKineticLine1X = useTransform(philosophyProgress, [0, 1], [400, -400]);
-  const rawKineticLine2X = useTransform(philosophyProgress, [0, 1], [-400, 400]);
-  const rawKineticBgX = useTransform(philosophyProgress, [0, 1], [-600, 600]);
+  // Philosophy Kinetic Scroll - Tighter ranges for mobile
+  const rawKineticLine1X = useTransform(philosophyProgress, [0, 1], [150, -150]);
+  const rawKineticLine2X = useTransform(philosophyProgress, [0, 1], [-150, 150]);
+  const rawKineticBgX = useTransform(philosophyProgress, [0, 1], [-300, 300]);
 
   const kineticLine1X = useSpring(rawKineticLine1X, { stiffness: 100, damping: 30, restDelta: 0.001 });
   const kineticLine2X = useSpring(rawKineticLine2X, { stiffness: 100, damping: 30, restDelta: 0.001 });
@@ -106,7 +104,6 @@ const Home: React.FC = () => {
     }
   };
 
-  // Fixed framer-motion ease type error by casting the array to a BezierDefinition tuple [number, number, number, number]
   const itemVariants = {
     hidden: { y: 30, opacity: 0 },
     visible: {
@@ -182,28 +179,33 @@ const Home: React.FC = () => {
         </div>
 
         {/* Left Column (Content) */}
-        <div className="w-full md:w-[45%] p-8 sm:p-14 md:p-16 lg:px-24 pt-12 md:pt-0 flex flex-col justify-center relative z-20 bg-white order-2 md:order-1">
+        <div className="w-full md:w-[45%] p-6 sm:p-14 md:p-16 lg:px-24 pt-12 md:pt-0 flex flex-col justify-center relative z-20 bg-white order-2 md:order-1">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="flex flex-col"
+            className="flex flex-col text-center md:text-left"
           >
-            <div className="mb-6 md:mb-8 flex flex-col">
-              {/* Removed overflow-hidden wrappers to prevent text clipping */}
-              <motion.h1 style={{ x: heroTextXLeft }} className="text-6xl md:text-[8vw] font-display font-black uppercase tracking-tighter leading-[0.75] italic mb-0 whitespace-nowrap z-10">
+            <div className="mb-8 md:mb-10 flex flex-col relative">
+              <motion.h1 
+                style={{ x: heroTextXLeft }} 
+                className="text-[14vw] md:text-[8vw] font-display font-black uppercase tracking-tighter leading-[0.85] md:leading-[0.75] italic mb-0 whitespace-nowrap z-10"
+              >
                 {home.heroTitle.split(' ')[0]}
               </motion.h1>
-              <motion.h1 style={{ x: heroTextXRight }} className="text-6xl md:text-[8vw] font-display font-black uppercase tracking-tighter leading-[0.75] italic text-hollow whitespace-nowrap z-10">
+              <motion.h1 
+                style={{ x: heroTextXRight }} 
+                className="text-[14vw] md:text-[8vw] font-display font-black uppercase tracking-tighter leading-[0.85] md:leading-[0.75] italic text-hollow whitespace-nowrap z-10 md:-mt-4"
+              >
                 {home.heroSubTitle}
               </motion.h1>
             </div>
             
-            <p className="text-gray-500 max-w-sm mb-10 text-sm md:text-base leading-relaxed font-medium tracking-tight">
+            <p className="text-gray-500 max-w-sm mx-auto md:mx-0 mb-10 text-sm md:text-base leading-relaxed font-medium tracking-tight">
               {home.heroDescription}
             </p>
             
-            <div className="flex space-x-10 mb-12 items-center">
+            <div className="flex justify-center md:justify-start space-x-10 mb-12 items-center">
               <motion.a href={branding.socialLinks.instagram} target="_blank" whileHover={{ scale: 1.2, color: 'var(--accent-color)' }} className="text-dark transition-colors"><Instagram size={24} strokeWidth={1.5} /></motion.a>
               <motion.a href={branding.socialLinks.youtube} target="_blank" whileHover={{ scale: 1.2, color: 'var(--accent-color)' }} className="text-dark transition-colors"><Youtube size={24} strokeWidth={1.5} /></motion.a>
               <motion.a href={branding.socialLinks.twitter} target="_blank" whileHover={{ scale: 1.2, color: 'var(--accent-color)' }} className="text-dark transition-colors"><Twitter size={24} strokeWidth={1.5} /></motion.a>
@@ -240,26 +242,26 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Philosophy Kinetic Section */}
+      {/* Philosophy Kinetic Section - Height Reduced for Mobile */}
       <section 
         ref={philosophyRef}
-        className="py-16 md:py-24 bg-dark text-white relative overflow-hidden flex items-center justify-center"
+        className="py-12 md:py-32 bg-dark text-white relative overflow-hidden flex items-center justify-center min-h-[20vh] md:min-h-[50vh]"
       >
         <motion.div 
           style={{ x: kineticBgX }}
-          className="absolute inset-0 flex items-center justify-center whitespace-nowrap opacity-[0.04] select-none pointer-events-none"
+          className="absolute inset-0 flex items-center justify-center whitespace-nowrap opacity-[0.03] select-none pointer-events-none"
         >
-          <span className="text-[60vw] font-display font-black uppercase tracking-tighter italic">STORIES</span>
+          <span className="text-[35vw] md:text-[60vw] font-display font-black uppercase tracking-tighter italic">STORIES</span>
         </motion.div>
 
-        <div className="relative z-10 w-full text-center flex flex-col items-center justify-center">
-          <motion.div style={{ x: kineticLine1X }} className="flex flex-col mb-4 md:mb-6">
-            <h2 className="text-6xl md:text-[9vw] font-display font-black uppercase tracking-tighter leading-none italic whitespace-nowrap">
+        <div className="relative z-10 w-full text-center flex flex-col items-center justify-center gap-1 md:gap-0">
+          <motion.div style={{ x: kineticLine1X }} className="flex flex-col">
+            <h2 className="text-[11vw] md:text-[9vw] font-display font-black uppercase tracking-tighter leading-none italic whitespace-nowrap">
               {home.philosophyLine1}
             </h2>
           </motion.div>
           <motion.div style={{ x: kineticLine2X }}>
-            <h2 className="text-6xl md:text-[9vw] font-display font-black uppercase tracking-tighter leading-none italic text-accent whitespace-nowrap">
+            <h2 className="text-[11vw] md:text-[9vw] font-display font-black uppercase tracking-tighter leading-none italic text-accent whitespace-nowrap md:-mt-4">
               {home.philosophyLine2}
             </h2>
           </motion.div>
@@ -320,7 +322,7 @@ const Home: React.FC = () => {
         </motion.div>
       </section>
 
-      {/* About Section (The Man Behind The Content) */}
+      {/* About Section */}
       <section className="pt-6 md:pt-10 pb-16 md:pb-24 bg-white px-6 overflow-hidden border-b border-gray-50">
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-12 md:gap-32">
           <div className="flex-1 relative">
@@ -353,7 +355,7 @@ const Home: React.FC = () => {
       {/* Work Clients Section */}
       <section className="bg-white border-b border-gray-100">
         <div className="w-full border-t border-b border-dark/10 py-8 md:py-14 text-center">
-          <h2 className="text-2xl md:text-6xl font-display font-black uppercase tracking-[0.15em] text-dark leading-none italic">
+          <h2 className="text-2xl md:text-6xl font-display font-black uppercase tracking-[0.15em] text-dark leading-none italic px-4">
             I WORK WITH INCREDIBLE BRANDS
           </h2>
         </div>

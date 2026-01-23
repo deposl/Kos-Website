@@ -37,10 +37,10 @@ const Contact: React.FC = () => {
   };
 
   return (
-    <div className="pt-32 md:pt-40 pb-20 bg-white min-h-screen">
+    <div className="pt-24 md:pt-32 pb-16 bg-white min-h-screen">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="mb-20">
-          <h1 className="text-6xl md:text-8xl font-display font-black uppercase italic tracking-tighter mb-6">
+        <div className="mb-12 pt-8 md:pt-12">
+          <h1 className="text-6xl md:text-8xl font-display font-black uppercase italic tracking-tighter mb-4">
             Let's <span className="text-accent text-hollow">Connect</span>
           </h1>
           <p className="text-xl text-gray-400 max-w-2xl font-medium">
@@ -48,7 +48,7 @@ const Contact: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12">
           {/* Contact Form */}
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
@@ -119,7 +119,7 @@ const Contact: React.FC = () => {
                     <div>
                       <label className="block text-[9px] font-black uppercase tracking-widest text-gray-500 mb-2">Message</label>
                       <textarea 
-                        rows={5}
+                        rows={4}
                         required
                         className="w-full bg-white/5 border border-white/10 rounded-sm px-4 py-4 focus:outline-none focus:border-accent transition-colors resize-none"
                         placeholder="Tell us about your goals..."
@@ -144,7 +144,7 @@ const Contact: React.FC = () => {
           </motion.div>
 
           {/* Booking & Info */}
-          <div className="space-y-8">
+          <div className="space-y-6">
             <motion.div 
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -152,7 +152,7 @@ const Contact: React.FC = () => {
             >
               <div>
                 <h2 className="text-4xl font-display font-black uppercase italic mb-4 tracking-tighter">Fast Track?</h2>
-                <p className="text-lg font-bold mb-8">Skip the email and book a direct 1:1 strategy session on my calendar.</p>
+                <p className="text-lg font-bold mb-6">Skip the email and book a direct 1:1 strategy session on my calendar.</p>
               </div>
               <button className="bg-dark text-white px-8 py-5 rounded-sm font-black uppercase tracking-widest text-xs flex items-center justify-center self-start hover:bg-white hover:text-dark transition-colors">
                 <Calendar className="mr-2" /> Book a Session
@@ -163,11 +163,11 @@ const Contact: React.FC = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-white border border-gray-100 p-8 md:p-12 rounded-sm space-y-8 shadow-sm"
+              className="bg-white border border-gray-100 p-8 md:p-12 rounded-sm space-y-6 shadow-sm"
             >
               <div className="flex items-start">
-                <div className="bg-dark text-accent p-4 rounded-sm mr-6 shadow-lg">
-                  <Mail className="w-6 h-6" />
+                <div className="bg-dark text-accent p-3 rounded-sm mr-4 shadow-lg">
+                  <Mail className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="text-gray-400 font-black uppercase text-[10px] tracking-widest mb-1">Email Us</h3>
@@ -175,8 +175,8 @@ const Contact: React.FC = () => {
                 </div>
               </div>
               <div className="flex items-start">
-                <div className="bg-dark text-accent p-4 rounded-sm mr-6 shadow-lg">
-                  <Phone className="w-6 h-6" />
+                <div className="bg-dark text-accent p-3 rounded-sm mr-4 shadow-lg">
+                  <Phone className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="text-gray-400 font-black uppercase text-[10px] tracking-widest mb-1">Call Us</h3>
@@ -184,8 +184,8 @@ const Contact: React.FC = () => {
                 </div>
               </div>
               <div className="flex items-start">
-                <div className="bg-dark text-accent p-4 rounded-sm mr-6 shadow-lg">
-                  <MapPin className="w-6 h-6" />
+                <div className="bg-dark text-accent p-3 rounded-sm mr-4 shadow-lg">
+                  <MapPin className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="text-gray-400 font-black uppercase text-[10px] tracking-widest mb-1">HQ</h3>

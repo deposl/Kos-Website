@@ -10,23 +10,23 @@ const Favorites: React.FC = () => {
   const items = content.favorites;
 
   return (
-    <div className="pt-24 md:pt-36 pb-20 bg-white">
+    <div className="pt-20 md:pt-28 pb-16 bg-white">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="text-center mb-24 pt-12 md:pt-16">
+        <div className="text-center mb-16 pt-8 md:pt-12">
           <motion.h1 
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="text-6xl md:text-9xl font-display font-black uppercase italic tracking-tighter mb-8"
+            className="text-6xl md:text-9xl font-display font-black uppercase italic tracking-tighter mb-6"
           >
             FAVOURITE <span className="text-gray-200">THINGS</span>
           </motion.h1>
-          <p className="text-xl text-gray-500 max-w-2xl mx-auto font-medium leading-relaxed" style={{ fontSize: 'var(--font-body)' }}>
+          <p className="text-xl text-gray-500 max-w-2xl mx-auto font-medium leading-relaxed">
             The tools, gear, and software I actually use to run my business and life. 
             No fluff, just essentials with exclusive discounts.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
           {items.map((item, idx) => (
             <motion.div
               key={item.id}
@@ -43,22 +43,22 @@ const Favorites: React.FC = () => {
                   className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000"
                 />
                 <div className="absolute top-6 right-6">
-                  <div className="bg-accent text-dark font-black px-6 py-3 rounded-sm text-xs flex items-center shadow-2xl tracking-widest">
-                    <Tag className="w-4 h-4 mr-2" /> {item.code}
+                  <div className="bg-accent text-dark font-black px-4 py-2 rounded-sm text-[10px] flex items-center shadow-2xl tracking-widest">
+                    <Tag className="w-3 h-3 mr-2" /> {item.code}
                   </div>
                 </div>
                 <div className="absolute inset-0 bg-dark/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <div className="bg-white text-dark p-4 rounded-full shadow-2xl scale-50 group-hover:scale-100 transition-transform">
-                    <ArrowUpRight size={24} />
+                  <div className="bg-white text-dark p-3 rounded-full shadow-2xl scale-50 group-hover:scale-100 transition-transform">
+                    <ArrowUpRight size={20} />
                   </div>
                 </div>
               </Link>
-              <div className="p-10">
+              <div className="p-8">
                 <Link to={`/favorites/${item.id}`}>
-                  <h3 className="text-2xl font-display font-black uppercase tracking-tighter mb-6 group-hover:text-accent transition-colors">{item.name}</h3>
+                  <h3 className="text-2xl font-display font-black uppercase tracking-tighter mb-4 group-hover:text-accent transition-colors">{item.name}</h3>
                 </Link>
-                <p className="text-gray-500 mb-10 text-base leading-relaxed line-clamp-3">{item.desc}</p>
-                <Link to={`/favorites/${item.id}`} className="w-full flex items-center justify-center space-x-3 bg-white border border-gray-100 py-5 rounded-sm font-black uppercase text-xs tracking-[0.3em] hover:bg-dark hover:text-white transition-all">
+                <p className="text-gray-500 mb-8 text-base leading-relaxed line-clamp-2">{item.desc}</p>
+                <Link to={`/favorites/${item.id}`} className="w-full flex items-center justify-center space-x-3 bg-white border border-gray-100 py-4 rounded-sm font-black uppercase text-xs tracking-[0.3em] hover:bg-dark hover:text-white transition-all">
                   <span>GET EXCLUSIVE DEAL</span>
                   <ExternalLink className="w-4 h-4" />
                 </Link>
