@@ -41,6 +41,9 @@
       html {
         scroll-behavior: smooth;
         background-color: #000;
+        /* Prevent scrollbar jumping */
+        overflow-y: scroll;
+        -webkit-overflow-scrolling: touch;
       }
       body {
         background-color: #ffffff;
@@ -54,13 +57,23 @@
         background: rgba(0, 0, 0, 0.95);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
-      }
-      .gpu-accelerated {
+        /* Isolates blur to prevent repaints */
         transform: translateZ(0);
+      }
+      
+      .gpu-accelerated {
+        transform: translate3d(0, 0, 0);
+        -webkit-backface-visibility: hidden;
         backface-visibility: hidden;
         perspective: 1000;
         will-change: transform, opacity;
       }
+      
+      /* Smooth transitions for all theme color changes */
+      * {
+        transition: background-color 0.2s ease-out, border-color 0.2s ease-out;
+      }
+
       ::-webkit-scrollbar {
         width: 6px;
       }
@@ -113,6 +126,13 @@
       }
       .ql-editor.ql-blank::before { color: rgba(255,255,255,0.2) !important; }
       .ql-editor { color: #fff; }
+
+      /* Performance fix: prevent heavy filters on mobile scroll */
+      @media (max-width: 768px) {
+        .grayscale {
+          filter: none !important;
+        }
+      }
     </style>
   <script type="importmap">
 {

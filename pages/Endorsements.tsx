@@ -29,11 +29,17 @@ const Endorsements: React.FC = () => {
           </div>
           <div className="flex-1 w-full relative">
             <div className="absolute -top-10 -right-10 w-40 h-40 bg-accent rounded-full -z-10 blur-3xl opacity-20" />
-            <img 
-              src={endorsements.mainImage} 
-              alt="Partnership" 
-              className="w-full rounded-sm grayscale hover:grayscale-0 transition-all duration-1000 border border-gray-100 shadow-2xl"
-            />
+            {endorsements.mainImage ? (
+              <img 
+                src={endorsements.mainImage} 
+                alt="Partnership" 
+                className="w-full rounded-sm grayscale hover:grayscale-0 transition-all duration-1000 border border-gray-100 shadow-2xl"
+              />
+            ) : (
+              <div className="w-full aspect-video bg-gray-900 flex items-center justify-center rounded-sm border border-white/5">
+                <span className="text-[10px] font-black uppercase tracking-widest text-gray-700">Asset required from database</span>
+              </div>
+            )}
           </div>
         </div>
 
