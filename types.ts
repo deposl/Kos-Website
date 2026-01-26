@@ -26,7 +26,6 @@ export interface SocialLinks {
   twitter: string;
   linkedin: string;
   facebook: string;
-  tiktok: string;
 }
 
 export interface BrandingContent {
