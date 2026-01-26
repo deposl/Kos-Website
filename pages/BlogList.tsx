@@ -35,7 +35,7 @@ const BlogList: React.FC = () => {
               transition={{ delay: idx * 0.1 }}
               className="group w-full"
             >
-              <Link to={`/blog/${post.id}`} className="block overflow-hidden rounded-sm bg-gray-900 border border-gray-100 mb-6 aspect-video relative">
+              <Link to={`/blog/${post.id}`} className="block overflow-hidden rounded-sm bg-[#f8f8f8] border border-gray-100 mb-6 aspect-video relative">
                 {post.image ? (
                   <img 
                     src={post.image} 
@@ -43,9 +43,7 @@ const BlogList: React.FC = () => {
                     className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center p-8 text-center">
-                    <span className="text-[14px] font-display font-black uppercase italic tracking-tighter text-gray-700">Database Entry: 0{idx+1}</span>
-                  </div>
+                  <div className="w-full h-full flex items-center justify-center text-gray-200 italic font-black text-4xl">NO IMAGE</div>
                 )}
                 <div className="absolute top-4 left-4 flex items-center space-x-2 bg-white px-3 py-1.5 rounded-sm shadow-xl">
                   <Calendar className="w-3 h-3 text-accent" />
@@ -70,8 +68,8 @@ const BlogList: React.FC = () => {
         </div>
 
         {blogs.length === 0 && (
-          <div className="text-center py-24 bg-[#f8f8f8] rounded-sm border-2 border-dashed border-gray-100">
-            <p className="text-gray-400 font-black uppercase tracking-[0.4em] text-[10px]">Journal entries will appear after database sync</p>
+          <div className="text-center py-16 bg-[#f8f8f8] rounded-sm border-2 border-dashed border-gray-100">
+            <p className="text-gray-400 font-bold uppercase tracking-widest">No articles found. Check back later.</p>
           </div>
         )}
       </div>

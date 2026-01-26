@@ -7,10 +7,10 @@ import { useSite } from '../contexts/SiteContext';
 
 const Favorites: React.FC = () => {
   const { content } = useSite();
-  const items = content.favorites || [];
+  const items = content.favorites;
 
   return (
-    <div className="pt-20 md:pt-28 pb-16 bg-white min-h-screen">
+    <div className="pt-20 md:pt-28 pb-16 bg-white">
       <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-16 pt-8 md:pt-12">
           <motion.h1 
@@ -36,18 +36,12 @@ const Favorites: React.FC = () => {
               transition={{ delay: idx * 0.1 }}
               className="bg-[#f8f8f8] border border-gray-100 rounded-sm overflow-hidden group hover:border-accent transition-all"
             >
-              <Link to={`/favorites/${item.id}`} className="block relative aspect-square overflow-hidden bg-gray-900">
-                {item.img ? (
-                  <img 
-                    src={item.img} 
-                    alt={item.name} 
-                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center p-8 text-center">
-                    <span className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-700 italic">No Preview Image</span>
-                  </div>
-                )}
+              <Link to={`/favorites/${item.id}`} className="block relative aspect-square overflow-hidden">
+                <img 
+                  src={item.img} 
+                  alt={item.name} 
+                  className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000"
+                />
                 <div className="absolute top-6 right-6">
                   <div className="bg-accent text-dark font-black px-4 py-2 rounded-sm text-[10px] flex items-center shadow-2xl tracking-widest">
                     <Tag className="w-3 h-3 mr-2" /> {item.code}
@@ -72,12 +66,6 @@ const Favorites: React.FC = () => {
             </motion.div>
           ))}
         </div>
-        
-        {items.length === 0 && (
-          <div className="text-center py-24 bg-[#f8f8f8] rounded-sm border-2 border-dashed border-gray-100">
-             <p className="text-gray-400 font-black uppercase tracking-[0.4em] text-[10px]">Curated items will appear here after database sync</p>
-          </div>
-        )}
       </div>
     </div>
   );
