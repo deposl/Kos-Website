@@ -8,7 +8,7 @@ const defaultUrl = 'https://sb.kostagenaris.com';
 const defaultKey = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJzdXBhYmFzZSIsImlhdCI6MTc2ODM5NzI4MCwiZXhwIjo0OTI0MDcwODgwLCJyb2xlIjoiYW5vbiJ9.j0rfGMGqGBC8VtwTR3Jq42Q8K8wuFZUTt6rf2YBhPa8';
 
 export const rawHost = 'sb.kostagenaris.com';
-const CONTENT_CACHE_KEY = 'creatorpro_site_content_v5';
+const CONTENT_CACHE_KEY = 'creatorpro_site_content_v6'; // Incremented version for clean migration
 
 interface TestResult {
   success: boolean;
@@ -48,13 +48,16 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const supabase = useMemo(() => createClient(dbConfig.url, dbConfig.key), [dbConfig]);
 
+  // Synchronous initialization from cache to prevent "placeholder flash"
   const [content, setContent] = useState<SiteContent>(() => {
     const cached = localStorage.getItem(CONTENT_CACHE_KEY);
     if (cached) {
       try {
-        return JSON.parse(cached);
+        const parsed = JSON.parse(cached);
+        // Basic validation to ensure we have a valid object
+        if (parsed && parsed.branding) return parsed;
       } catch (e) {
-        return defaultContent;
+        console.error("Cache hydration failed:", e);
       }
     }
     return defaultContent;
@@ -62,7 +65,7 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [isAdmin, setIsAdmin] = useState(() => sessionStorage.getItem('is_admin') === 'true');
   
-  // Cache check for initial loading state: If we have cache, don't block with preloader
+  // Only show the preloader if we have NO cached data at all
   const [isLoading, setIsLoading] = useState(() => {
     const cached = localStorage.getItem(CONTENT_CACHE_KEY);
     return !cached;
@@ -77,7 +80,7 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const fetchData = async (silent = false) => {
-    // If cache exists and we aren't explicitly forcing a reload, we run in background
+    // Determine if we should block UI or run in background (SWR)
     const hasCache = !!localStorage.getItem(CONTENT_CACHE_KEY);
     const backgroundSync = silent || hasCache;
 
@@ -94,25 +97,24 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const blogs = blogsRes.data || [];
       const favs = favsRes.data || [];
 
+      // If settings exists, we favor DB data over defaults entirely
       const updatedContent: SiteContent = {
         branding: { 
           ...defaultContent.branding, 
           ...(settings?.branding || {}),
           adminKey: settings?.admin_key || 'admin123'
         },
-        typography: settings?.typography_data || (defaultContent as any).typography || {
-          nav: 15, small: 13.5, body: 21, h1: 120, h2: 80
-        },
-        home: { ...defaultContent.home, ...(settings?.home_data || {}) },
-        services: { ...defaultContent.services, ...(settings?.services_data || {}) },
-        endorsements: { ...defaultContent.endorsements, ...(settings?.endorsements_data || {}) },
-        favorites_seo: settings?.favorites_seo || defaultContent.favorites_seo,
-        blogs_seo: settings?.blogs_seo || defaultContent.blogs_seo,
-        navLinks: (settings?.nav_links && settings.nav_links.length > 0) ? settings.nav_links : defaultContent.navLinks,
-        blogs: (blogs.length > 0) ? blogs : (settingsRes.data ? [] : defaultContent.blogs),
-        favorites: (favs.length > 0) ? favs : (settingsRes.data ? [] : defaultContent.favorites),
-        contact: { ...defaultContent.contact, ...(settings?.contact_data || {}) },
-        customScripts: { ...defaultContent.customScripts, ...(settings?.custom_scripts || {}) }
+        typography: settings?.typography_data || content.typography || defaultContent.typography,
+        home: settings?.home_data ? { ...settings.home_data } : content.home,
+        services: settings?.services_data ? { ...settings.services_data } : content.services,
+        endorsements: settings?.endorsements_data ? { ...settings.endorsements_data } : content.endorsements,
+        favorites_seo: settings?.favorites_seo || content.favorites_seo || defaultContent.favorites_seo,
+        blogs_seo: settings?.blogs_seo || content.blogs_seo || defaultContent.blogs_seo,
+        navLinks: (settings?.nav_links && settings.nav_links.length > 0) ? settings.nav_links : content.navLinks,
+        blogs: blogs.length > 0 ? blogs : (settings ? [] : content.blogs),
+        favorites: favs.length > 0 ? favs : (settings ? [] : content.favorites),
+        contact: settings?.contact_data ? { ...settings.contact_data } : content.contact,
+        customScripts: settings?.custom_scripts ? { ...settings.custom_scripts } : content.customScripts
       };
 
       setContent(updatedContent);
@@ -203,7 +205,11 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateContent = async (newContent: SiteContent) => {
-    // updateContent no longer sets global isLoading to true to prevent Preloader from showing
+    // 1. Optimistically update state and cache for zero-latency UI
+    setContent(newContent);
+    safeLocalStorageSet(CONTENT_CACHE_KEY, JSON.stringify(newContent));
+
+    // 2. Persist to database
     try {
       const { error: sErr } = await supabase.from('site_settings').upsert({
         id: 1,
@@ -242,8 +248,8 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }));
       if (favsToInsert.length > 0) await supabase.from('favorites').insert(favsToInsert);
 
-      localStorage.removeItem(CONTENT_CACHE_KEY);
-      await fetchData(true); // Silent background refresh
+      // Silent background fetch to ensure state is in sync with server IDs/timestamps
+      await fetchData(true);
     } catch (err) {
        console.error('Update Error:', err);
        throw err;
