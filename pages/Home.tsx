@@ -5,36 +5,22 @@ import { Instagram, Youtube, Twitter, Linkedin, Facebook, ArrowRight, Zap } from
 import { Link } from 'react-router-dom';
 import { useSite } from '../contexts/SiteContext';
 
+// Custom TikTok Icon
+const TikTokIcon = ({ size = 20 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    <path d="M19.589 6.686a4.944 4.944 0 0 1-3.218-1.182V13.38c0 3.123-2.532 5.655-5.655 5.655-3.123 0-5.655-2.532-5.655-5.655 0-3.122 2.532-5.655 5.655-5.655.154 0 .305.01.455.03v2.869c-.149-.03-.302-.047-.455-.047-1.531 0-2.771 1.24-2.771 2.771 0 1.53 1.24 2.771 2.771 2.771 1.53 0 2.771-1.24 2.771-2.771V2.606h2.883a4.947 4.947 0 0 0 4.944 4.944v2.883a7.803 7.803 0 0 1-1.455-.133v-3.614z" />
+  </svg>
+);
+
 const Home: React.FC = () => {
   const { content } = useSite();
   const { home, branding } = content;
   
-  // Slider variants for the horizontal slide effect
-  const slideVariants = {
-    enter: (direction: number) => ({
-      x: direction > 0 ? '100%' : '-100%',
-      opacity: 0
-    }),
-    center: {
-      zIndex: 1,
-      x: 0,
-      opacity: 1
-    },
-    exit: (direction: number) => ({
-      zIndex: 0,
-      x: direction < 0 ? '100%' : '-100%',
-      opacity: 0
-    })
-  };
-
   const slideTransition = {
-    x: { type: "spring" as const, stiffness: 300, damping: 30 },
-    opacity: { duration: 0.2 }
-  };
-
-  const swipeConfidenceThreshold = 10000;
-  const swipePower = (offset: number, velocity: number) => {
-    return Math.abs(offset) * velocity;
+    type: "spring" as const,
+    stiffness: 150,
+    damping: 25,
+    mass: 1
   };
 
   // Hero Slider Logic
@@ -80,7 +66,7 @@ const Home: React.FC = () => {
     offset: ["start end", "end start"]
   });
 
-  // Parallax transforms for Hero - Refined to move in tandem rather than opposite
+  // Parallax transforms for Hero
   const heroTextY = useTransform(scrollY, [0, 800], [0, 80]);
   const heroImgScale = useTransform(scrollY, [0, 800], [1, 1.15]);
   const heroBgTextX = useTransform(scrollY, [0, 1000], [0, -300]);
@@ -125,32 +111,23 @@ const Home: React.FC = () => {
             style={{ scale: heroImgScale }}
             className="w-full h-full relative"
           >
-            <AnimatePresence mode="popLayout" initial={false} custom={heroDirection}>
-              <motion.img 
-                key={heroIdx}
-                src={heroImages[heroIdx]} 
-                custom={heroDirection}
-                variants={slideVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={slideTransition}
-                drag="x"
-                dragConstraints={{ left: 0, right: 0 }}
-                dragElastic={1}
-                onDragEnd={(e, { offset, velocity }) => {
-                  const swipe = swipePower(offset.x, velocity.x);
-                  if (swipe < -swipeConfidenceThreshold) {
-                    paginateHero(1);
-                  } else if (swipe > swipeConfidenceThreshold) {
-                    paginateHero(-1);
-                  }
-                }}
-                alt="Showcase" 
-                className="absolute inset-0 w-full h-full object-cover grayscale brightness-90 transition-all duration-700 cursor-grab active:cursor-grabbing transform-gpu"
-                loading="eager" 
-              />
-            </AnimatePresence>
+            {/* Continuous Reel Container */}
+            <motion.div 
+              className="flex w-full h-full"
+              animate={{ x: `-${heroIdx * 100}%` }}
+              transition={slideTransition}
+            >
+              {heroImages.map((img, i) => (
+                <div key={i} className="w-full h-full flex-shrink-0">
+                  <img 
+                    src={img} 
+                    alt={`Hero ${i}`} 
+                    className="w-full h-full object-cover grayscale brightness-90"
+                    loading="eager"
+                  />
+                </div>
+              ))}
+            </motion.div>
             <div className="absolute inset-0 bg-gradient-to-r from-white via-transparent to-transparent opacity-10 pointer-events-none z-10" />
             
             {heroImages.length > 1 && (
@@ -201,7 +178,9 @@ const Home: React.FC = () => {
                 Let's Connect
               </Link>
               <div className="flex space-x-6 items-center">
+                <motion.a href={branding.socialLinks.tiktok} target="_blank" whileHover={{ y: -5, color: 'var(--accent-color)' }} className="text-dark"><TikTokIcon size={20}/></motion.a>
                 <motion.a href={branding.socialLinks.instagram} target="_blank" whileHover={{ y: -5, color: 'var(--accent-color)' }} className="text-dark"><Instagram size={20}/></motion.a>
+                <motion.a href={branding.socialLinks.facebook} target="_blank" whileHover={{ y: -5, color: 'var(--accent-color)' }} className="text-dark"><Facebook size={20}/></motion.a>
                 <motion.a href={branding.socialLinks.youtube} target="_blank" whileHover={{ y: -5, color: 'var(--accent-color)' }} className="text-dark"><Youtube size={20}/></motion.a>
                 <motion.a href={branding.socialLinks.linkedin} target="_blank" whileHover={{ y: -5, color: 'var(--accent-color)' }} className="text-dark"><Linkedin size={20}/></motion.a>
               </div>
@@ -258,20 +237,22 @@ const Home: React.FC = () => {
       <section className="pt-16 pb-12 px-6 max-w-7xl mx-auto flex flex-col lg:flex-row gap-20">
         <motion.div initial={{ opacity: 0, scale: 0.98 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="flex-1 relative group">
           <div className="relative w-full aspect-[4/5] bg-gray-50 overflow-hidden shadow-2xl">
-             <AnimatePresence mode="popLayout" initial={false} custom={serviceDirection}>
-               <motion.img 
-                 key={serviceIdx}
-                 src={serviceImages[serviceIdx]} 
-                 custom={serviceDirection}
-                 variants={slideVariants}
-                 initial="enter"
-                 animate="center"
-                 exit="exit"
-                 transition={slideTransition}
-                 alt="Showcase" 
-                 className="absolute inset-0 w-full h-full object-cover grayscale brightness-90 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-[2000ms]" 
-               />
-             </AnimatePresence>
+             {/* Continuous Reel Container for Services */}
+             <motion.div 
+               className="flex w-full h-full"
+               animate={{ x: `-${serviceIdx * 100}%` }}
+               transition={slideTransition}
+             >
+               {serviceImages.map((img, i) => (
+                 <div key={i} className="w-full h-full flex-shrink-0">
+                    <img 
+                      src={img} 
+                      alt={`Service ${i}`} 
+                      className="w-full h-full object-cover grayscale brightness-90 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-[2000ms]" 
+                    />
+                 </div>
+               ))}
+             </motion.div>
              <motion.div initial={{ rotate: 5 }} whileHover={{ rotate: 0, scale: 1.05 }} className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 w-56 h-56 bg-accent text-dark p-10 flex flex-col justify-center shadow-2xl z-20">
                 <span className="font-display font-black uppercase text-3xl italic leading-[0.8] mb-3 tracking-tighter">
                   {home.serviceCardTitle.split(' ')[0]} <br/> {home.serviceCardTitle.split(' ').slice(1).join(' ')}

@@ -61,7 +61,7 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const [isAdmin, setIsAdmin] = useState(() => sessionStorage.getItem('is_admin') === 'true');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const setDbConfig = (config: { url: string; key: string }) => {
     localStorage.setItem('db_url', config.url);
@@ -72,6 +72,7 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const fetchData = async () => {
+    setIsLoading(true);
     try {
       const [settingsRes, blogsRes, favsRes] = await Promise.all([
         supabase.from('site_settings').select('*').eq('id', 1).maybeSingle(),
@@ -106,6 +107,8 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
       safeLocalStorageSet(CONTENT_CACHE_KEY, JSON.stringify(updatedContent));
     } catch (err: any) {
       console.error('❌ Sync Error:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 

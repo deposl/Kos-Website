@@ -12,12 +12,16 @@ import {
   Mail, MessageSquare, ChevronLeft, Edit3,
   Instagram, Youtube, Twitter, Linkedin, Facebook, User
 } from 'lucide-react';
-import { BlogPost, FavoriteItem, SEOConfig } from '../../types';
+import { BlogPost, FavoriteItem, SEOConfig, NavLink, ServiceItem, EndorsementOption, ClientBrand } from '../../types';
+
+// Custom TikTok Icon
+const TikTokIcon = ({ size = 20 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    <path d="M19.589 6.686a4.944 4.944 0 0 1-3.218-1.182V13.38c0 3.123-2.532 5.655-5.655 5.655-3.123 0-5.655-2.532-5.655-5.655 0-3.122 2.532-5.655 5.655-5.655.154 0 .305.01.455.03v2.869c-.149-.03-.302-.047-.455-.047-1.531 0-2.771 1.24-2.771 2.771 0 1.53 1.24 2.771 2.771 2.771 1.53 0 2.771-1.24 2.771-2.771V2.606h2.883a4.947 4.947 0 0 0 4.944 4.944v2.883a7.803 7.803 0 0 1-1.455-.133v-3.614z" />
+  </svg>
+);
 
 const SQL_SCHEMA = `-- SUPABASE DATABASE SETUP SCRIPT (V7 - Final Leads & Persistence)
--- Copy and run this in your Supabase SQL Editor.
-
--- Site settings and core modules
 CREATE TABLE IF NOT EXISTS site_settings (
     id BIGINT PRIMARY KEY,
     branding JSONB DEFAULT '{}'::jsonb,
@@ -54,14 +58,12 @@ CREATE TABLE IF NOT EXISTS favorites (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 
--- Newsletter Subscribers
 CREATE TABLE IF NOT EXISTS subscribers (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email TEXT UNIQUE NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 
--- Contact Form Inquiries
 CREATE TABLE IF NOT EXISTS inquiries (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
@@ -71,10 +73,8 @@ CREATE TABLE IF NOT EXISTS inquiries (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 
--- INITIAL SETUP
 INSERT INTO site_settings (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
 
--- SECURITY BYPASS (Disable RLS for public submissions)
 ALTER TABLE site_settings DISABLE ROW LEVEL SECURITY;
 ALTER TABLE blogs DISABLE ROW LEVEL SECURITY;
 ALTER TABLE favorites DISABLE ROW LEVEL SECURITY;
@@ -97,23 +97,6 @@ interface Subscriber {
   created_at: string;
 }
 
-const quillModules = {
-  toolbar: [
-    [{ 'header': [1, 2, 3, false] }],
-    ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-    ['link', 'image', 'video'],
-    ['clean']
-  ],
-};
-
-const quillFormats = [
-  'header',
-  'bold', 'italic', 'underline', 'strike', 'blockquote',
-  'list', 
-  'link', 'image', 'video'
-];
-
 const fileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -123,7 +106,6 @@ const fileToBase64 = (file: File): Promise<string> => {
   });
 };
 
-// UI COMPONENTS
 const InputField = ({ label, value, onChange, placeholder = "", type = "text" }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; type?: string }) => (
   <div className="space-y-2">
     <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">{label}</label>
@@ -157,12 +139,12 @@ const SEOEditor = ({ config, onChange }: { config: SEOConfig | undefined; onChan
     </div>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <InputField 
-        label="Meta Title (Ideal: 50-60 chars)" 
+        label="Meta Title" 
         value={config?.metaTitle || ''} 
         onChange={(v) => onChange({ metaTitle: v, metaDescription: config?.metaDescription || '' })} 
       />
       <TextAreaField 
-        label="Meta Description (Ideal: 150-160 chars)" 
+        label="Meta Description" 
         value={config?.metaDescription || ''} 
         onChange={(v) => onChange({ metaTitle: config?.metaTitle || '', metaDescription: v })} 
       />
@@ -210,13 +192,7 @@ const ImageUploadField = ({ label, value, onChange, className = "" }: { label: s
             <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Click to Upload</span>
           </>
         )}
-        <input 
-          type="file" 
-          ref={fileInputRef} 
-          className="hidden" 
-          accept="image/*" 
-          onChange={handleFileChange} 
-        />
+        <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
       </div>
     </div>
   );
@@ -241,57 +217,50 @@ const MultiImageManager = ({ label, images, onChange }: { label: string; images:
     }
   };
 
-  const removeImage = (idx: number) => {
-    const newImgs = [...images];
-    newImgs.splice(idx, 1);
-    onChange(newImgs);
-  };
-
-  const moveImg = (idx: number, dir: 'up' | 'down') => {
-    const newImgs = [...images];
-    const target = dir === 'up' ? idx - 1 : idx + 1;
-    if (target >= 0 && target < newImgs.length) {
-      [newImgs[idx], newImgs[target]] = [newImgs[target], newImgs[idx]];
-      onChange(newImgs);
-    }
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-4">
          <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">{label}</label>
-         <button 
-           onClick={() => fileInputRef.current?.click()}
-           className="bg-accent text-dark px-4 py-2 rounded-sm text-[9px] font-black uppercase tracking-widest flex items-center gap-2 hover:brightness-110"
-         >
+         <button onClick={() => fileInputRef.current?.click()} className="bg-accent text-dark px-4 py-2 rounded-sm text-[9px] font-black uppercase tracking-widest flex items-center gap-2">
            {loading ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />} Add Frame
          </button>
          <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleAddImage} />
       </div>
-      
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {images.map((img, idx) => (
           <div key={idx} className="relative aspect-square bg-white/5 border border-white/10 rounded-sm group overflow-hidden">
              <img src={img} className="w-full h-full object-cover grayscale opacity-60 group-hover:opacity-100 transition-all" />
-             <div className="absolute inset-0 bg-dark/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3">
-                <div className="flex gap-2">
-                  <button onClick={() => moveImg(idx, 'up')} disabled={idx === 0} className="p-2 bg-white/10 rounded-full hover:bg-accent hover:text-dark disabled:opacity-20"><ArrowUp size={14}/></button>
-                  <button onClick={() => moveImg(idx, 'down')} disabled={idx === images.length - 1} className="p-2 bg-white/10 rounded-full hover:bg-accent hover:text-dark disabled:opacity-20"><ArrowDown size={14}/></button>
-                </div>
-                <button onClick={() => removeImage(idx)} className="text-red-500 hover:text-red-400 p-2"><Trash2 size={18} /></button>
+             <div className="absolute inset-0 flex items-center justify-center bg-dark/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button onClick={() => { const n = [...images]; n.splice(idx, 1); onChange(n); }} className="text-red-500"><Trash2 size={18} /></button>
              </div>
-             <div className="absolute top-2 left-2 bg-dark/80 text-[8px] font-black px-2 py-1 rounded-sm border border-white/10">0{idx + 1}</div>
+             <div className="absolute top-2 left-2 bg-dark/80 text-[8px] font-black px-2 py-1 rounded-sm">0{idx + 1}</div>
           </div>
         ))}
-        {images.length === 0 && (
-          <div className="col-span-full py-12 text-center border-2 border-dashed border-white/5 text-gray-700 font-black uppercase text-[10px] tracking-widest">
-            Slider Empty. Add images to activate.
-          </div>
-        )}
       </div>
     </div>
   );
 };
+
+const GenericList = <T extends any>({ label, items = [], onAdd, onRemove, onUpdate, renderItem }: { label: string; items?: T[]; onAdd: () => void; onRemove: (idx: number) => void; onUpdate: (idx: number, data: T) => void; renderItem: (item: T, idx: number) => React.ReactNode; }) => (
+  <div className="space-y-4 pt-6 border-t border-white/5">
+    <div className="flex justify-between items-center">
+      <label className="text-[9px] font-black uppercase tracking-widest text-accent">{label}</label>
+      <button onClick={onAdd} className="bg-white/5 hover:bg-white/10 p-2 rounded-sm text-[9px] font-black uppercase tracking-widest flex items-center gap-2">
+        <Plus size={12} /> Add Item
+      </button>
+    </div>
+    <div className="space-y-4">
+      {items.map((item, idx) => (
+        <div key={idx} className="bg-white/5 p-6 rounded-sm relative group">
+          <button onClick={() => onRemove(idx)} className="absolute top-4 right-4 text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Trash2 size={16} />
+          </button>
+          {renderItem(item, idx)}
+        </div>
+      ))}
+    </div>
+  </div>
+);
 
 const AdminDashboard: React.FC = () => {
   const { content, isAdmin, logout, isLoading: isGlobalLoading, updateContent, dbConfig } = useSite();
@@ -299,32 +268,22 @@ const AdminDashboard: React.FC = () => {
   const [localContent, setLocalContent] = useState(content);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [copied, setCopied] = useState(false);
-  const [syncLog, setSyncLog] = useState<string[]>([]);
   const navigate = useNavigate();
 
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [isDataFetching, setIsDataFetching] = useState(false);
 
-  // For Blog Post Editing
-  const [editingBlogId, setEditingBlogId] = useState<string | null>(null);
-
   useEffect(() => {
     setLocalContent(content);
   }, [content]);
 
   useEffect(() => {
-    const isActuallyAdmin = sessionStorage.getItem('is_admin') === 'true';
-    if (!isAdmin && !isActuallyAdmin) {
-      navigate('/admin');
-    }
+    if (!isAdmin && sessionStorage.getItem('is_admin') !== 'true') navigate('/admin');
   }, [isAdmin, navigate]);
 
   useEffect(() => {
-    if (activeTab === 'inquiries' || activeTab === 'subscribers') {
-      fetchLeads();
-    }
+    if (activeTab === 'inquiries' || activeTab === 'subscribers') fetchLeads();
   }, [activeTab]);
 
   const fetchLeads = async () => {
@@ -338,113 +297,53 @@ const AdminDashboard: React.FC = () => {
         const { data } = await supabase.from('subscribers').select('*').order('created_at', { ascending: false });
         setSubscribers(data || []);
       }
-    } catch (e) {
-      console.error('Fetch error:', e);
-    } finally {
-      setIsDataFetching(false);
-    }
-  };
-
-  const deleteLead = async (id: string, table: 'inquiries' | 'subscribers') => {
-    if (!confirm('Permanently delete this entry?')) return;
-    try {
-      const supabase = createClient(dbConfig.url, dbConfig.key);
-      await supabase.from(table).delete().eq('id', id);
-      fetchLeads();
-    } catch (e) {
-      console.error('Delete error:', e);
-    }
+    } catch (e) { console.error(e); } finally { setIsDataFetching(false); }
   };
 
   const handleSave = async () => {
     setIsSaving(true);
-    setSaveStatus('idle');
-    setSyncLog(["Initializing secure sync..."]);
     try {
       await updateContent(localContent);
-      setSyncLog(prev => [...prev, "✓ Settings Updated", "✓ Table Blogs Rebuilt", "✓ Table Favorites Rebuilt", "✓ CLOUD SYNC SUCCESSFUL"]);
       setSaveStatus('success');
-      setTimeout(() => setSaveStatus('idle'), 5000);
-    } catch (e: any) {
-      const errMsg = e.message || String(e);
-      setSyncLog(prev => [...prev, `✖ CRITICAL ERROR: ${errMsg}`]);
-      setSaveStatus('error');
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const copySql = () => {
-    navigator.clipboard.writeText(SQL_SCHEMA);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    } catch (e) { setSaveStatus('error'); } finally { setIsSaving(false); }
   };
 
   const updateSection = (section: keyof typeof localContent, updates: any) => {
-    setLocalContent(prev => {
-      const current = prev[section];
-      let newValue;
-      
-      if (Array.isArray(current)) {
-        newValue = updates;
-      } else {
-        newValue = { ...(current as any || {}), ...updates };
-      }
-      
-      return {
-        ...prev,
-        [section]: newValue
-      };
-    });
-  };
-
-  const updateSocials = (updates: any) => {
-    const currentSocials = localContent.branding.socialLinks || { instagram: '', youtube: '', twitter: '', linkedin: '', facebook: '' };
-    updateSection('branding', { socialLinks: { ...currentSocials, ...updates } });
-  };
-
-  const moveItem = (listKey: 'navLinks' | 'favorites' | 'blogs', index: number, direction: 'up' | 'down') => {
-    const newList = [...(localContent[listKey] || [])];
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    if (targetIndex >= 0 && targetIndex < newList.length) {
-      [newList[index], newList[targetIndex]] = [newList[targetIndex], newList[index]];
-      updateSection(listKey, newList);
-    }
+    setLocalContent(prev => ({
+      ...prev,
+      [section]: Array.isArray(prev[section]) ? updates : { ...(prev[section] as any || {}), ...updates }
+    }));
   };
 
   if (isGlobalLoading) return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center space-y-4">
-      <Loader2 className="animate-spin text-accent" size={48} />
-      <p className="text-white text-[10px] font-black uppercase tracking-[0.5em] animate-pulse">Initializing Console</p>
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center">
+      <Loader2 className="animate-spin text-accent mb-4" size={48} />
+      <p className="text-white text-[10px] font-black uppercase tracking-[0.5em]">Syncing...</p>
     </div>
   );
 
   return (
     <div className="min-h-screen bg-[#050505] text-white pt-44 pb-20 font-sans">
       <div className="max-w-7xl mx-auto px-4">
-        
         <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
           <div>
             <h1 className="text-5xl font-display font-black uppercase italic tracking-tighter leading-none">
               COMMAND <span className="text-accent">CENTER</span>
             </h1>
-            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.4em] mt-3">CMS ARCHITECTURE V12.0 (FEATURE RESTORED)</p>
+            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.4em] mt-3">CMS ARCHITECTURE V12.0</p>
           </div>
-          <div className="flex space-x-4 w-full md:w-auto">
-            <button 
-              onClick={handleSave} 
-              disabled={isSaving} 
-              className={`flex-1 md:flex-none px-12 py-5 rounded-sm font-black text-xs uppercase tracking-[0.2em] flex items-center justify-center transition-all hover:scale-[1.02] disabled:opacity-20 shadow-[0_0_30px_rgba(204,255,0,0.3)] ${saveStatus === 'success' ? 'bg-green-500 text-white' : 'bg-accent text-dark'}`}
-            >
+          <div className="flex space-x-4">
+            <button onClick={handleSave} disabled={isSaving} className={`px-12 py-5 rounded-sm font-black text-xs uppercase tracking-[0.2em] flex items-center ${saveStatus === 'success' ? 'bg-green-500 text-white' : 'bg-accent text-dark'}`}>
               {isSaving ? <Loader2 className="animate-spin mr-3" size={18} /> : saveStatus === 'success' ? <Check className="mr-3" size={18}/> : <Save className="mr-3 w-4 h-4" />} 
               {saveStatus === 'success' ? 'Cloud Updated' : 'Push to Cloud'}
             </button>
-            <button onClick={logout} className="bg-white/5 hover:bg-white/10 px-8 py-5 text-xs font-black uppercase tracking-widest border border-white/5 transition-colors">Logout</button>
+            <button onClick={logout} className="bg-white/5 px-8 py-5 text-xs font-black uppercase tracking-widest border border-white/5">Logout</button>
           </div>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
-          <div className="lg:w-72 space-y-2 flex-shrink-0">
+          <div className="lg:w-72 space-y-2">
             {[
               { id: 'branding', icon: Palette, label: 'Identity' },
               { id: 'navigation', icon: MoveUp, label: 'Navigation' },
@@ -463,8 +362,7 @@ const AdminDashboard: React.FC = () => {
             ))}
           </div>
 
-          <div className="flex-grow bg-[#0A0A0A] border border-white/5 p-8 md:p-12 rounded-sm min-h-[700px] shadow-2xl overflow-hidden relative">
-            
+          <div className="flex-grow bg-[#0A0A0A] border border-white/5 p-8 md:p-12 rounded-sm min-h-[700px] shadow-2xl">
             {activeTab === 'branding' && (
               <div className="space-y-10">
                 <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">Site Identity</h3>
@@ -472,50 +370,17 @@ const AdminDashboard: React.FC = () => {
                   <InputField label="Site Name" value={localContent.branding.siteName} onChange={(v) => updateSection('branding', { siteName: v })} />
                   <InputField label="Logo Text" value={localContent.branding.logoText} onChange={(v) => updateSection('branding', { logoText: v })} />
                   <InputField label="Logo Sub-text" value={localContent.branding.logoSubText} onChange={(v) => updateSection('branding', { logoSubText: v })} />
-                  <div className="space-y-2">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Theme Accent</label>
-                    <div className="flex gap-4">
-                      <input type="color" className="w-14 h-14 bg-white/5 border border-white/10 p-2 cursor-pointer" value={localContent.branding.accentColor} onChange={(e) => updateSection('branding', { accentColor: e.target.value })} />
-                      <input className="flex-grow bg-white/5 border border-white/10 px-4 font-mono text-sm uppercase text-white" value={localContent.branding.accentColor} onChange={(e) => updateSection('branding', { accentColor: e.target.value })} />
-                    </div>
-                  </div>
-                  
-                  <div className="md:col-span-2 mt-4">
-                    <ImageUploadField 
-                      label="Browser Favicon (Ideal: 32x32px or 64x64px Square)" 
-                      value={localContent.branding.favicon || ''} 
-                      onChange={(v) => updateSection('branding', { favicon: v })}
-                      className="max-w-xs"
-                    />
-                  </div>
+                  <InputField label="Accent HEX" value={localContent.branding.accentColor} onChange={(v) => updateSection('branding', { accentColor: v })} />
+                  <InputField label="Admin Access Key" value={localContent.branding.adminKey || ''} onChange={(v) => updateSection('branding', { adminKey: v })} />
                 </div>
-
-                <div className="mt-16 pt-10 border-t border-white/5">
-                   <div className="flex items-center gap-3 text-accent mb-8">
-                      <Share2 size={20} />
-                      <h3 className="text-xl font-display font-black uppercase italic tracking-tighter">Social Connectivity</h3>
-                   </div>
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      <div className="flex items-center gap-4 bg-white/5 p-4 rounded-sm border border-white/5">
-                        <Instagram className="text-gray-500" size={20} />
-                        <InputField label="Instagram URL" value={localContent.branding.socialLinks?.instagram || ''} onChange={(v) => updateSocials({ instagram: v })} />
-                      </div>
-                      <div className="flex items-center gap-4 bg-white/5 p-4 rounded-sm border border-white/5">
-                        <Youtube className="text-gray-500" size={20} />
-                        <InputField label="YouTube URL" value={localContent.branding.socialLinks?.youtube || ''} onChange={(v) => updateSocials({ youtube: v })} />
-                      </div>
-                      <div className="flex items-center gap-4 bg-white/5 p-4 rounded-sm border border-white/5">
-                        <Twitter className="text-gray-500" size={20} />
-                        <InputField label="Twitter / X URL" value={localContent.branding.socialLinks?.twitter || ''} onChange={(v) => updateSocials({ twitter: v })} />
-                      </div>
-                      <div className="flex items-center gap-4 bg-white/5 p-4 rounded-sm border border-white/5">
-                        <Linkedin className="text-gray-500" size={20} />
-                        <InputField label="LinkedIn URL" value={localContent.branding.socialLinks?.linkedin || ''} onChange={(v) => updateSocials({ linkedin: v })} />
-                      </div>
-                      <div className="flex items-center gap-4 bg-white/5 p-4 rounded-sm border border-white/5">
-                        <Facebook className="text-gray-500" size={20} />
-                        <InputField label="Facebook URL" value={localContent.branding.socialLinks?.facebook || ''} onChange={(v) => updateSocials({ facebook: v })} />
-                      </div>
+                <div className="pt-10 border-t border-white/5">
+                   <h4 className="text-[10px] font-black uppercase tracking-widest text-accent mb-6">Social Link Engine</h4>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <InputField label="TikTok" value={localContent.branding.socialLinks.tiktok} onChange={(v) => updateSection('branding', { socialLinks: { ...localContent.branding.socialLinks, tiktok: v } })} />
+                      <InputField label="Instagram" value={localContent.branding.socialLinks.instagram} onChange={(v) => updateSection('branding', { socialLinks: { ...localContent.branding.socialLinks, instagram: v } })} />
+                      <InputField label="Facebook" value={localContent.branding.socialLinks.facebook} onChange={(v) => updateSection('branding', { socialLinks: { ...localContent.branding.socialLinks, facebook: v } })} />
+                      <InputField label="YouTube" value={localContent.branding.socialLinks.youtube} onChange={(v) => updateSection('branding', { socialLinks: { ...localContent.branding.socialLinks, youtube: v } })} />
+                      <InputField label="LinkedIn" value={localContent.branding.socialLinks.linkedin} onChange={(v) => updateSection('branding', { socialLinks: { ...localContent.branding.socialLinks, linkedin: v } })} />
                    </div>
                 </div>
               </div>
@@ -523,32 +388,20 @@ const AdminDashboard: React.FC = () => {
 
             {activeTab === 'navigation' && (
               <div className="space-y-10">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">Site Navigation</h3>
-                  <button onClick={() => updateSection('navLinks', [...(localContent.navLinks || []), { id: crypto.randomUUID(), name: 'New Link', path: '/', isExternal: false, isButton: false }])} className="bg-accent text-dark px-6 py-2 text-[10px] font-black uppercase tracking-widest rounded-sm flex items-center gap-2"><Plus size={14} /> Add New Link</button>
-                </div>
-                <div className="space-y-4">
-                  {(localContent.navLinks || []).map((link, idx) => (
-                    <div key={link.id} className="bg-white/5 border border-white/5 p-6 rounded-sm flex flex-col md:flex-row gap-6 items-center group">
-                      <div className="flex flex-col gap-2">
-                        <button onClick={() => moveItem('navLinks', idx, 'up')} disabled={idx === 0} className="p-1 hover:text-accent disabled:opacity-20"><ArrowUp size={16} /></button>
-                        <button onClick={() => moveItem('navLinks', idx, 'down')} disabled={idx === (localContent.navLinks || []).length - 1} className="p-1 hover:text-accent disabled:opacity-20"><ArrowDown size={16} /></button>
-                      </div>
-                      <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-                        <InputField label="Label" value={link.name} onChange={(v) => {
-                          const n = [...localContent.navLinks]; n[idx].name = v; updateSection('navLinks', n);
-                        }} />
-                        <InputField label="Path" value={link.path} onChange={(v) => {
-                          const n = [...localContent.navLinks]; n[idx].path = v; updateSection('navLinks', n);
-                        }} />
-                      </div>
-                      <button onClick={() => {
-                        const n = [...localContent.navLinks]; n[idx].isButton = !n[idx].isButton; updateSection('navLinks', n);
-                      }} className={`text-[9px] font-black uppercase px-4 py-2 rounded-sm border ${link.isButton ? 'bg-accent text-dark' : 'border-white/10 text-gray-500'}`}>{link.isButton ? 'Button' : 'Default'}</button>
-                      <button onClick={() => updateSection('navLinks', localContent.navLinks.filter(n => n.id !== link.id))} className="text-red-500 p-2"><Trash2 size={16} /></button>
+                <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">Navigation</h3>
+                <GenericList<NavLink>
+                  label="Nav Links"
+                  items={localContent.navLinks}
+                  onAdd={() => updateSection('navLinks', [...localContent.navLinks, { id: Date.now().toString(), name: 'New Link', path: '/', isExternal: false, isButton: false }])}
+                  onRemove={(idx) => { const n = [...localContent.navLinks]; n.splice(idx, 1); updateSection('navLinks', n); }}
+                  onUpdate={() => {}}
+                  renderItem={(item, idx) => (
+                    <div className="grid grid-cols-2 gap-4">
+                      <InputField label="Label" value={item.name} onChange={(v) => { const n = [...localContent.navLinks]; n[idx].name = v; updateSection('navLinks', n); }} />
+                      <InputField label="Path" value={item.path} onChange={(v) => { const n = [...localContent.navLinks]; n[idx].path = v; updateSection('navLinks', n); }} />
                     </div>
-                  ))}
-                </div>
+                  )}
+                />
               </div>
             )}
 
@@ -556,151 +409,18 @@ const AdminDashboard: React.FC = () => {
               <div className="space-y-12">
                 <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">Home Page</h3>
                 <SEOEditor config={localContent.home.seo} onChange={(v) => updateSection('home', { seo: v })} />
-                
-                {/* Hero Configuration */}
-                <section className="space-y-8 pt-8 border-t border-white/5">
-                  <div className="flex items-center gap-3 text-accent/60 mb-4">
-                    <Layout size={18} />
-                    <h4 className="text-[10px] font-black uppercase tracking-widest">Hero Configuration</h4>
+                <section className="bg-white/5 p-8 rounded-sm space-y-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <InputField label="Hero Headline" value={localContent.home.heroTitle} onChange={(v) => updateSection('home', { heroTitle: v })} />
+                    <InputField label="Hero Accent" value={localContent.home.heroSubTitle} onChange={(v) => updateSection('home', { heroSubTitle: v })} />
+                    <TextAreaField label="Description" value={localContent.home.heroDescription} onChange={(v) => updateSection('home', { heroDescription: v })} />
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <InputField label="Headline Part 1" value={localContent.home.heroTitle} onChange={(v) => updateSection('home', { heroTitle: v })} />
-                    <InputField label="Headline Part 2" value={localContent.home.heroSubTitle} onChange={(v) => updateSection('home', { heroSubTitle: v })} />
-                    <div className="md:col-span-2">
-                      <TextAreaField label="Description" value={localContent.home.heroDescription} onChange={(v) => updateSection('home', { heroDescription: v })} />
-                    </div>
-                    <InputField label="Hero Watermark (@SEVSPICS)" value={localContent.home.heroWatermark} onChange={(v) => updateSection('home', { heroWatermark: v })} />
-                    <InputField label="Hero Status Badge (Viral Design Mode)" value={localContent.home.heroMood} onChange={(v) => updateSection('home', { heroMood: v })} />
-                    <div className="md:col-span-2 pt-8 space-y-12">
-                      <MultiImageManager 
-                        label="Hero Header Slider"
-                        images={localContent.home.heroImages || [localContent.home.heroImage]} 
-                        onChange={(v) => updateSection('home', { heroImages: v })} 
-                      />
-                    </div>
-                  </div>
+                  <MultiImageManager label="Hero Images" images={localContent.home.heroImages} onChange={(v) => updateSection('home', { heroImages: v })} />
                 </section>
-
-                {/* Kinetic Typography */}
-                <section className="space-y-8 pt-12 border-t border-white/5">
-                  <div className="flex items-center gap-3 text-accent/60 mb-4">
-                    <Type size={18} />
-                    <h4 className="text-[10px] font-black uppercase tracking-widest">Kinetic Text / Philosophy</h4>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <InputField label="Philosophy Line 1 (I DON'T MAKE ADS.)" value={localContent.home.philosophyLine1} onChange={(v) => updateSection('home', { philosophyLine1: v })} />
-                    <InputField label="Philosophy Line 2 (I DESIGN STORIES.)" value={localContent.home.philosophyLine2} onChange={(v) => updateSection('home', { philosophyLine2: v })} />
-                  </div>
-                </section>
-
-                {/* About Section - NEWLY ADDED */}
-                <section className="space-y-8 pt-12 border-t border-white/5">
-                  <div className="flex items-center gap-3 text-accent/60 mb-4">
-                    <User size={18} />
-                    <h4 className="text-[10px] font-black uppercase tracking-widest">About Section (The Man Behind...)</h4>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <InputField label="Section Title" value={localContent.home.aboutTitle} onChange={(v) => updateSection('home', { aboutTitle: v })} />
-                    <ImageUploadField label="About Photo" value={localContent.home.aboutImage} onChange={(v) => updateSection('home', { aboutImage: v })} />
-                    <div className="md:col-span-2">
-                       <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 mb-2 block">Body Text Paragraphs (One per line)</label>
-                       <textarea 
-                        className="w-full bg-white/5 border border-white/10 p-4 rounded-sm text-sm text-white font-medium focus:border-accent outline-none min-h-[150px]"
-                        value={(localContent.home.aboutText || []).join('\n')}
-                        onChange={(e) => updateSection('home', { aboutText: e.target.value.split('\n') })}
-                       />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-4">
-                     <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Performance Stats</label>
-                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {(localContent.home.stats || []).map((stat, sIdx) => (
-                          <div key={sIdx} className="bg-white/5 border border-white/5 p-4 rounded-sm space-y-3">
-                             <InputField label="Value (e.g. 1.6M)" value={stat.value} onChange={(v) => {
-                               const newStats = [...localContent.home.stats];
-                               newStats[sIdx].value = v;
-                               updateSection('home', { stats: newStats });
-                             }} />
-                             <InputField label="Label (e.g. Followers)" value={stat.label} onChange={(v) => {
-                               const newStats = [...localContent.home.stats];
-                               newStats[sIdx].label = v;
-                               updateSection('home', { stats: newStats });
-                             }} />
-                          </div>
-                        ))}
-                     </div>
-                  </div>
-                </section>
-
-                {/* Service Teaser - NEWLY ADDED */}
-                <section className="space-y-8 pt-12 border-t border-white/5">
-                  <div className="flex items-center gap-3 text-accent/60 mb-4">
-                    <Briefcase size={18} />
-                    <h4 className="text-[10px] font-black uppercase tracking-widest">Home Service Teaser</h4>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <InputField label="Teaser Card Title" value={localContent.home.serviceCardTitle} onChange={(v) => updateSection('home', { serviceCardTitle: v })} />
-                    <InputField label="Teaser Card Link Label" value={localContent.home.serviceCardLabel} onChange={(v) => updateSection('home', { serviceCardLabel: v })} />
-                    <div className="md:col-span-2">
-                       <MultiImageManager 
-                        label="Service Teaser Image Gallery"
-                        images={localContent.home.serviceImages || []} 
-                        onChange={(v) => updateSection('home', { serviceImages: v })} 
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-4 pt-4">
-                     <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Home Service Bulletins</label>
-                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {(localContent.home.services || []).map((svc, svcIdx) => (
-                          <div key={svcIdx} className="bg-white/5 border border-white/5 p-4 rounded-sm space-y-3">
-                             <InputField label="Title" value={svc.title} onChange={(v) => {
-                               const n = [...localContent.home.services]; n[svcIdx].title = v; updateSection('home', { services: n });
-                             }} />
-                             <TextAreaField label="Description" value={svc.desc} onChange={(v) => {
-                               const n = [...localContent.home.services]; n[svcIdx].desc = v; updateSection('home', { services: n });
-                             }} />
-                          </div>
-                        ))}
-                     </div>
-                  </div>
-                </section>
-
-                {/* Brands/Clients - NEWLY ADDED */}
-                <section className="space-y-8 pt-12 border-t border-white/5">
-                  <div className="flex justify-between items-center mb-4">
-                    <div className="flex items-center gap-3 text-accent/60">
-                      <Star size={18} />
-                      <h4 className="text-[10px] font-black uppercase tracking-widest">Incredible Brands / Clients</h4>
-                    </div>
-                    <button 
-                      onClick={() => updateSection('home', { clients: [...(localContent.home.clients || []), { name: 'New Client', logo: '' }] })}
-                      className="bg-accent text-dark px-4 py-2 text-[9px] font-black uppercase rounded-sm flex items-center gap-2"
-                    >
-                      <Plus size={12} /> Add Brand
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                     {(localContent.home.clients || []).map((client, cIdx) => (
-                       <div key={cIdx} className="bg-white/5 border border-white/10 p-4 rounded-sm relative group">
-                          <button 
-                            onClick={() => {
-                              const n = [...localContent.home.clients]; n.splice(cIdx, 1); updateSection('home', { clients: n });
-                            }} 
-                            className="absolute top-2 right-2 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <Trash2 size={12} />
-                          </button>
-                          <ImageUploadField label="Logo" value={client.logo} onChange={(v) => {
-                            const n = [...localContent.home.clients]; n[cIdx].logo = v; updateSection('home', { clients: n });
-                          }} className="mb-4" />
-                          <InputField label="Brand Name" value={client.name} onChange={(v) => {
-                            const n = [...localContent.home.clients]; n[cIdx].name = v; updateSection('home', { clients: n });
-                          }} />
-                       </div>
-                     ))}
-                  </div>
+                <section className="bg-white/5 p-8 rounded-sm space-y-8">
+                  <InputField label="About Title" value={localContent.home.aboutTitle} onChange={(v) => updateSection('home', { aboutTitle: v })} />
+                  <TextAreaField label="Bio (Line Separated)" value={localContent.home.aboutText.join('\n')} onChange={(v) => updateSection('home', { aboutText: v.split('\n') })} />
+                  <ImageUploadField label="About Image" value={localContent.home.aboutImage} onChange={(v) => updateSection('home', { aboutImage: v })} />
                 </section>
               </div>
             )}
@@ -708,369 +428,114 @@ const AdminDashboard: React.FC = () => {
             {activeTab === 'services' && (
               <div className="space-y-12">
                 <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">Services Module</h3>
-                <SEOEditor config={localContent.services.seo} onChange={(v) => updateSection('services', { seo: v })} />
-                
-                <section className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-white/5">
-                  <InputField label="Header Label" value={localContent.services.headerLabel} onChange={(v) => updateSection('services', { headerLabel: v })} />
-                  <InputField label="Header Title" value={localContent.services.headerTitle} onChange={(v) => updateSection('services', { headerTitle: v })} />
-                  <div className="md:col-span-2">
-                    <TextAreaField label="Header Description" value={localContent.services.headerDescription} onChange={(v) => updateSection('services', { headerDescription: v })} />
-                  </div>
-                </section>
-
-                <section className="pt-12 border-t border-white/5">
-                  <div className="flex justify-between items-center mb-8">
-                    <h4 className="text-xl font-display font-black uppercase tracking-tighter italic">Service Blocks</h4>
-                    <button 
-                      onClick={() => updateSection('services', { serviceBlocks: [...(localContent.services.serviceBlocks || []), { title: 'New Service', items: ['Sample Feature'] }] })}
-                      className="bg-accent text-dark px-4 py-2 text-[9px] font-black uppercase rounded-sm"
-                    >
-                      + Add Block
-                    </button>
-                  </div>
+                <section className="bg-white/5 p-8 rounded-sm space-y-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {(localContent.services.serviceBlocks || []).map((block, bIdx) => (
-                      <div key={bIdx} className="bg-white/5 border border-white/5 p-6 rounded-sm relative">
-                        <button 
-                          onClick={() => {
-                            const newBlocks = [...localContent.services.serviceBlocks];
-                            newBlocks.splice(bIdx, 1);
-                            updateSection('services', { serviceBlocks: newBlocks });
-                          }}
-                          className="absolute top-4 right-4 text-red-500 hover:text-red-400"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                        <InputField label="Block Title" value={block.title} onChange={(v) => {
-                           const newBlocks = [...localContent.services.serviceBlocks];
-                           newBlocks[bIdx].title = v;
-                           updateSection('services', { serviceBlocks: newBlocks });
-                        }} />
-                        <div className="mt-4">
-                          <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 mb-2 block">Bullet Points (one per line)</label>
-                          <textarea 
-                            className="w-full bg-black/40 border border-white/10 p-4 rounded-sm text-sm text-white font-medium focus:border-accent outline-none"
-                            value={block.items.join('\n')}
-                            onChange={(e) => {
-                               const newBlocks = [...localContent.services.serviceBlocks];
-                               newBlocks[bIdx].items = e.target.value.split('\n');
-                               updateSection('services', { serviceBlocks: newBlocks });
-                            }}
-                          />
-                        </div>
-                      </div>
-                    ))}
+                    <InputField label="Header Label" value={localContent.services.headerLabel} onChange={(v) => updateSection('services', { headerLabel: v })} />
+                    <InputField label="Header Title" value={localContent.services.headerTitle} onChange={(v) => updateSection('services', { headerTitle: v })} />
+                    <TextAreaField label="Description" value={localContent.services.headerDescription} onChange={(v) => updateSection('services', { headerDescription: v })} />
                   </div>
                 </section>
+                <GenericList<ServiceItem>
+                  label="Service Blocks"
+                  items={localContent.services.serviceBlocks}
+                  onAdd={() => updateSection('services', { serviceBlocks: [...localContent.services.serviceBlocks, { title: 'New Service', items: [] }] })}
+                  onRemove={(idx) => { const b = [...localContent.services.serviceBlocks]; b.splice(idx, 1); updateSection('services', { serviceBlocks: b }); }}
+                  onUpdate={() => {}}
+                  renderItem={(item, idx) => (
+                    <div className="space-y-4">
+                      <InputField label="Title" value={item.title} onChange={(v) => { const b = [...localContent.services.serviceBlocks]; b[idx].title = v; updateSection('services', { serviceBlocks: b }); }} />
+                      <InputField label="Bullets (Comma Separated)" value={item.items.join(', ')} onChange={(v) => { const b = [...localContent.services.serviceBlocks]; b[idx].items = v.split(',').map(i => i.trim()); updateSection('services', { serviceBlocks: b }); }} />
+                    </div>
+                  )}
+                />
               </div>
             )}
 
             {activeTab === 'endorsements' && (
               <div className="space-y-12">
-                <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">Endorsements Module</h3>
-                <SEOEditor config={localContent.endorsements.seo} onChange={(v) => updateSection('endorsements', { seo: v })} />
-                
-                <section className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-white/5">
-                  <div className="space-y-8">
-                    <InputField label="Header Title" value={localContent.endorsements.headerTitle} onChange={(v) => updateSection('endorsements', { headerTitle: v })} />
-                    <TextAreaField label="Header Description" value={localContent.endorsements.headerDescription} onChange={(v) => updateSection('endorsements', { headerDescription: v })} />
-                  </div>
-                  <ImageUploadField label="Feature Image" value={localContent.endorsements.mainImage} onChange={(v) => updateSection('endorsements', { mainImage: v })} />
-                </section>
-
-                <section className="pt-12 border-t border-white/5">
-                  <div className="flex justify-between items-center mb-8">
-                    <h4 className="text-xl font-display font-black uppercase tracking-tighter italic">Partnership Options</h4>
-                    <button 
-                      onClick={() => updateSection('endorsements', { options: [...(localContent.endorsements.options || []), { title: 'New Deal', desc: 'Sample description.' }] })}
-                      className="bg-accent text-dark px-4 py-2 text-[9px] font-black uppercase rounded-sm"
-                    >
-                      + Add Option
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {(localContent.endorsements.options || []).map((opt, oIdx) => (
-                      <div key={oIdx} className="bg-white/5 border border-white/5 p-6 rounded-sm relative">
-                        <button onClick={() => {
-                          const newOpts = [...localContent.endorsements.options];
-                          newOpts.splice(oIdx, 1);
-                          updateSection('endorsements', { options: newOpts });
-                        }} className="absolute top-4 right-4 text-red-500"><Trash2 size={14} /></button>
-                        <InputField label="Title" value={opt.title} onChange={(v) => {
-                          const n = [...localContent.endorsements.options]; n[oIdx].title = v; updateSection('endorsements', { options: n });
-                        }} />
-                        <div className="mt-4">
-                          <TextAreaField label="Description" value={opt.desc} onChange={(v) => {
-                            const n = [...localContent.endorsements.options]; n[oIdx].desc = v; updateSection('endorsements', { options: n });
-                          }} />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
+                <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">Endorsements</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <InputField label="Headline" value={localContent.endorsements.headerTitle} onChange={(v) => updateSection('endorsements', { headerTitle: v })} />
+                  <TextAreaField label="Description" value={localContent.endorsements.headerDescription} onChange={(v) => updateSection('endorsements', { headerDescription: v })} />
+                  <ImageUploadField label="Main Image" value={localContent.endorsements.mainImage} onChange={(v) => updateSection('endorsements', { mainImage: v })} />
+                </div>
               </div>
             )}
 
             {activeTab === 'favorites' && (
-              <div className="space-y-12">
-                <div className="flex justify-between items-center">
-                   <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">Creator Gear & Favorites</h3>
-                   <button 
-                     onClick={() => updateSection('favorites', [{ id: crypto.randomUUID(), name: 'New Item', desc: '', code: 'DEAL10', img: '' }, ...(localContent.favorites || [])])}
-                     className="bg-accent text-dark px-6 py-3 rounded-sm font-black uppercase text-xs tracking-widest flex items-center gap-2"
-                   >
-                     <Plus size={16} /> Add New Gear
-                   </button>
-                </div>
-                
-                <SEOEditor config={localContent.favorites_seo} onChange={(v) => updateSection('favorites_seo', v)} />
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {(localContent.favorites || []).map((item, idx) => (
-                    <div key={item.id} className="bg-white/5 border border-white/10 p-8 rounded-sm group relative">
-                       <div className="flex flex-col md:flex-row gap-6">
-                          <div className="w-full md:w-32">
-                             <ImageUploadField label="Image" value={item.img} onChange={(v) => {
-                               const n = [...localContent.favorites]; n[idx].img = v; updateSection('favorites', n);
-                             }} />
-                          </div>
-                          <div className="flex-grow space-y-4">
-                             <InputField label="Gear Name" value={item.name} onChange={(v) => {
-                               const n = [...localContent.favorites]; n[idx].name = v; updateSection('favorites', n);
-                             }} />
-                             <InputField label="Promo Code" value={item.code} onChange={(v) => {
-                               const n = [...localContent.favorites]; n[idx].code = v; updateSection('favorites', n);
-                             }} />
-                          </div>
-                       </div>
-                       <div className="mt-4">
-                          <TextAreaField label="Recommendation Detail" value={item.desc} onChange={(v) => {
-                            const n = [...localContent.favorites]; n[idx].desc = v; updateSection('favorites', n);
-                          }} />
-                       </div>
-                       <div className="flex justify-between items-center mt-6 pt-6 border-t border-white/5">
-                          <div className="flex gap-2">
-                             <button onClick={() => moveItem('favorites', idx, 'up')} disabled={idx === 0} className="p-2 hover:text-accent disabled:opacity-10"><ArrowUp size={14}/></button>
-                             <button onClick={() => moveItem('favorites', idx, 'down')} disabled={idx === localContent.favorites.length - 1} className="p-2 hover:text-accent disabled:opacity-10"><ArrowDown size={14}/></button>
-                          </div>
-                          <button onClick={() => updateSection('favorites', localContent.favorites.filter(f => f.id !== item.id))} className="text-red-500 font-black uppercase text-[9px] flex items-center gap-1 hover:brightness-125">
-                            <Trash2 size={12} /> Delete Entry
-                          </button>
-                       </div>
+              <div className="space-y-10">
+                <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">Favorites</h3>
+                <GenericList<FavoriteItem>
+                  label="Gear Items"
+                  items={localContent.favorites}
+                  onAdd={() => updateSection('favorites', [...localContent.favorites, { id: Date.now().toString(), name: 'New Item', desc: '', code: 'DEAL', img: '' }])}
+                  onRemove={(idx) => { const f = [...localContent.favorites]; f.splice(idx, 1); updateSection('favorites', f); }}
+                  onUpdate={() => {}}
+                  renderItem={(item, idx) => (
+                    <div className="grid grid-cols-2 gap-4">
+                      <InputField label="Name" value={item.name} onChange={(v) => { const f = [...localContent.favorites]; f[idx].name = v; updateSection('favorites', f); }} />
+                      <ImageUploadField label="Image" value={item.img} onChange={(v) => { const f = [...localContent.favorites]; f[idx].img = v; updateSection('favorites', f); }} />
                     </div>
-                  ))}
-                </div>
+                  )}
+                />
               </div>
             )}
 
             {activeTab === 'blogs' && (
-              <div className="space-y-12">
-                {editingBlogId ? (
-                  <div className="space-y-8 animate-in fade-in duration-500">
-                    <button onClick={() => setEditingBlogId(null)} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-white transition-colors">
-                      <ChevronLeft size={16} /> Back to Archive
-                    </button>
-                    
-                    {(() => {
-                      const post = localContent.blogs.find(b => b.id === editingBlogId);
-                      if (!post) return null;
-                      const postIdx = localContent.blogs.findIndex(b => b.id === editingBlogId);
-
-                      return (
-                        <div className="space-y-10">
-                          <div className="flex justify-between items-center">
-                            <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">Edit Journal Entry</h3>
-                            <button onClick={() => setEditingBlogId(null)} className="bg-accent text-dark px-6 py-2 rounded-sm text-[10px] font-black uppercase">Finish Editing</button>
-                          </div>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                             <div className="space-y-6">
-                               <InputField label="Article Title" value={post.title} onChange={(v) => {
-                                 const n = [...localContent.blogs]; n[postIdx].title = v; updateSection('blogs', n);
-                               }} />
-                               <InputField label="Publish Date" value={post.date} onChange={(v) => {
-                                 const n = [...localContent.blogs]; n[postIdx].date = v; updateSection('blogs', n);
-                               }} />
-                               <TextAreaField label="Excerpt / Summary" value={post.excerpt} onChange={(v) => {
-                                 const n = [...localContent.blogs]; n[postIdx].excerpt = v; updateSection('blogs', n);
-                               }} />
-                             </div>
-                             <ImageUploadField label="Featured Image" value={post.image} onChange={(v) => {
-                               const n = [...localContent.blogs]; n[postIdx].image = v; updateSection('blogs', n);
-                             }} />
-                          </div>
-
-                          <div className="space-y-2">
-                             <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Main Content (Rich Text)</label>
-                             <ReactQuill 
-                               theme="snow" 
-                               value={post.content || ''} 
-                               onChange={(v) => {
-                                 const n = [...localContent.blogs]; n[postIdx].content = v; updateSection('blogs', n);
-                               }} 
-                               modules={quillModules}
-                               formats={quillFormats}
-                             />
-                          </div>
-
-                          <div className="bg-white/5 p-8 rounded-sm space-y-6 border border-white/5">
-                             <h4 className="text-[10px] font-black uppercase tracking-widest text-accent">Article SEO Override</h4>
-                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                               <InputField label="Custom SEO Title" value={post.seo_title || ''} onChange={(v) => {
-                                 const n = [...localContent.blogs]; n[postIdx].seo_title = v; updateSection('blogs', n);
-                               }} />
-                               <TextAreaField label="Custom Meta Description" value={post.seo_description || ''} onChange={(v) => {
-                                 const n = [...localContent.blogs]; n[postIdx].seo_description = v; updateSection('blogs', n);
-                               }} />
-                             </div>
-                          </div>
-                        </div>
-                      );
-                    })()}
-                  </div>
-                ) : (
-                  <div className="space-y-10">
-                    <div className="flex justify-between items-center">
-                       <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">The Journal Archive</h3>
-                       <button 
-                         onClick={() => {
-                           const newId = crypto.randomUUID();
-                           updateSection('blogs', [{ id: newId, title: 'Draft Post', date: new Date().toISOString().split('T')[0], excerpt: '', content: '', image: '' }, ...(localContent.blogs || [])]);
-                           setEditingBlogId(newId);
-                         }}
-                         className="bg-accent text-dark px-6 py-3 rounded-sm font-black uppercase text-xs tracking-widest flex items-center gap-2"
-                       >
-                         <Plus size={16} /> New Article
-                       </button>
-                    </div>
-
-                    <SEOEditor config={localContent.blogs_seo} onChange={(v) => updateSection('blogs_seo', v)} />
-
+              <div className="space-y-10">
+                <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">Journal</h3>
+                <GenericList<BlogPost>
+                  label="Articles"
+                  items={localContent.blogs}
+                  onAdd={() => updateSection('blogs', [...localContent.blogs, { id: Date.now().toString(), title: 'Draft', date: new Date().toISOString().split('T')[0], excerpt: '', content: '', image: '' }])}
+                  onRemove={(idx) => { const b = [...localContent.blogs]; b.splice(idx, 1); updateSection('blogs', b); }}
+                  onUpdate={() => {}}
+                  renderItem={(item, idx) => (
                     <div className="space-y-4">
-                       {(localContent.blogs || []).map((post, idx) => (
-                         <div key={post.id} className="bg-white/5 border border-white/5 p-6 rounded-sm flex items-center gap-6 group hover:bg-white/10 transition-colors">
-                            <div className="w-24 h-24 bg-black border border-white/10 rounded-sm overflow-hidden flex-shrink-0">
-                               {post.image ? <img src={post.image} className="w-full h-full object-cover grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 transition-all" /> : <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-800">NO IMG</div>}
-                            </div>
-                            <div className="flex-grow">
-                               <div className="flex items-center gap-2 text-[8px] font-black uppercase tracking-widest text-accent mb-1">
-                                  <span>{post.date}</span>
-                               </div>
-                               <h4 className="text-xl font-bold font-display uppercase italic tracking-tighter">{post.title}</h4>
-                               <p className="text-gray-500 text-xs line-clamp-1 mt-1">{post.excerpt}</p>
-                            </div>
-                            <div className="flex items-center gap-4">
-                               <div className="flex flex-col gap-1">
-                                  <button onClick={() => moveItem('blogs', idx, 'up')} disabled={idx === 0} className="p-1 hover:text-accent disabled:opacity-10"><ArrowUp size={14}/></button>
-                                  <button onClick={() => moveItem('blogs', idx, 'down')} disabled={idx === localContent.blogs.length - 1} className="p-1 hover:text-accent disabled:opacity-10"><ArrowDown size={14}/></button>
-                               </div>
-                               <button onClick={() => setEditingBlogId(post.id)} className="p-4 bg-white/5 rounded-full hover:bg-accent hover:text-dark transition-all"><Edit3 size={18}/></button>
-                               <button onClick={() => updateSection('blogs', localContent.blogs.filter(b => b.id !== post.id))} className="p-4 hover:text-red-500 transition-all"><Trash2 size={18}/></button>
-                            </div>
-                         </div>
-                       ))}
-                       {localContent.blogs.length === 0 && (
-                         <div className="text-center py-20 bg-white/5 border-2 border-dashed border-white/5 text-gray-700 font-black uppercase text-xs tracking-widest">Archive Empty. Write something meaningful.</div>
-                       )}
+                      <InputField label="Title" value={item.title} onChange={(v) => { const b = [...localContent.blogs]; b[idx].title = v; updateSection('blogs', b); }} />
+                      <TextAreaField label="Excerpt" value={item.excerpt} onChange={(v) => { const b = [...localContent.blogs]; b[idx].excerpt = v; updateSection('blogs', b); }} />
+                      <div className="space-y-2">
+                         <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Rich Content</label>
+                         <ReactQuill theme="snow" value={item.content} onChange={(v) => { const b = [...localContent.blogs]; b[idx].content = v; updateSection('blogs', b); }} />
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                />
               </div>
             )}
 
             {activeTab === 'inquiries' && (
               <div className="space-y-10">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">Leads & Inquiries</h3>
-                  <button onClick={fetchLeads} className="p-2 hover:bg-white/5 rounded-full"><RefreshCw size={18} className={isDataFetching ? 'animate-spin' : ''}/></button>
+                   <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">Inquiries</h3>
+                   <button onClick={fetchLeads} className="p-2"><RefreshCw size={18} className={isDataFetching ? 'animate-spin' : ''}/></button>
                 </div>
-                <div className="space-y-6">
-                  {inquiries.map((inq) => (
-                    <div key={inq.id} className="bg-white/5 border border-white/5 p-8 rounded-sm group relative">
-                      <button onClick={() => deleteLead(inq.id, 'inquiries')} className="absolute top-4 right-4 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={18} /></button>
-                      <div className="flex flex-col md:flex-row justify-between mb-6 gap-4 border-b border-white/5 pb-4">
-                        <div>
-                           <p className="text-accent font-black uppercase tracking-[0.2em] text-xs">{inq.subject}</p>
-                           <h4 className="text-xl font-bold mt-1">{inq.name}</h4>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-gray-400 text-xs font-mono">{new Date(inq.created_at).toLocaleString()}</p>
-                          <p className="text-white text-sm font-medium">{inq.email}</p>
-                        </div>
-                      </div>
-                      <p className="text-gray-400 text-sm leading-relaxed italic border-l-2 border-accent/20 pl-4 py-2">"{inq.message}"</p>
-                    </div>
-                  ))}
-                </div>
+                {inquiries.map(inq => (
+                  <div key={inq.id} className="bg-white/5 p-6 rounded-sm border border-white/5">
+                    <h4 className="font-bold text-accent uppercase tracking-widest text-xs mb-2">{inq.subject}</h4>
+                    <p className="text-sm mb-4"><strong>{inq.name}</strong> ({inq.email})</p>
+                    <p className="text-gray-400 italic">"{inq.message}"</p>
+                  </div>
+                ))}
               </div>
             )}
 
             {activeTab === 'subscribers' && (
               <div className="space-y-10">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">Newsletter Roster</h3>
-                  <button onClick={fetchLeads} className="p-2 hover:bg-white/5 rounded-full"><RefreshCw size={18} className={isDataFetching ? 'animate-spin' : ''}/></button>
-                </div>
-                <div className="bg-white/5 border border-white/5 rounded-sm overflow-hidden">
-                  <table className="w-full text-left">
-                    <thead className="bg-white/5 text-[9px] font-black uppercase tracking-widest text-gray-500 border-b border-white/10">
-                      <tr>
-                        <th className="px-6 py-4">Email Address</th>
-                        <th className="px-6 py-4">Join Date</th>
-                        <th className="px-6 py-4 text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5">
-                      {subscribers.map((sub) => (
-                        <tr key={sub.id} className="hover:bg-white/5 group">
-                          <td className="px-6 py-4 font-bold text-sm">{sub.email}</td>
-                          <td className="px-6 py-4 text-xs text-gray-400">{new Date(sub.created_at).toLocaleDateString()}</td>
-                          <td className="px-6 py-4 text-right">
-                            <button onClick={() => deleteLead(sub.id, 'subscribers')} className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-2"><Trash2 size={16} /></button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">Newsletter</h3>
+                <div className="grid grid-cols-1 gap-2">
+                  {subscribers.map(sub => <div key={sub.id} className="p-4 bg-white/5 border border-white/5">{sub.email}</div>)}
                 </div>
               </div>
             )}
 
             {activeTab === 'system' && (
-              <div className="space-y-12">
-                <div className="bg-blue-500/5 border border-blue-500/10 p-8 rounded-sm">
-                   <div className="flex items-center gap-4 text-blue-400 mb-6">
-                      <Terminal size={28} />
-                      <h3 className="text-xl font-display font-black uppercase italic tracking-tighter">Database Protocol</h3>
-                   </div>
-                   <p className="text-sm text-gray-400 mb-8 leading-relaxed">
-                     If your contact forms are failing, you MUST execute this script in your Supabase SQL Editor. 
-                     This creates the tables and disables RLS for public access.
-                   </p>
-                   <div className="relative">
-                      <button onClick={copySql} className="absolute top-4 right-4 bg-accent text-dark p-2 rounded-sm font-black uppercase text-[10px] flex items-center gap-2 hover:scale-105 transition-transform">
-                        {copied ? <Check size={14} /> : <Copy size={14} />} {copied ? "Copied" : "Copy SQL"}
-                      </button>
-                      <pre className="bg-black border border-white/10 p-6 rounded-sm text-[10px] font-mono text-accent overflow-x-auto leading-relaxed max-h-[450px]">
-                        {SQL_SCHEMA}
-                      </pre>
-                   </div>
-                </div>
-
-                <div className="mt-16 pt-10 border-t border-white/5">
-                   <div className="flex items-center gap-3 text-red-500 mb-8">
-                      <Shield size={20} />
-                      <h3 className="text-xl font-display font-black uppercase italic tracking-tighter">Security Protocol</h3>
-                   </div>
-                   <div className="max-w-md">
-                      <InputField 
-                        type="password"
-                        label="Master Access Key" 
-                        placeholder="Current access key"
-                        value={localContent.branding.adminKey || ''} 
-                        onChange={(v) => updateSection('branding', { adminKey: v })} 
-                      />
-                   </div>
+              <div className="space-y-10">
+                <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">Infrastructure</h3>
+                <div className="relative">
+                  <pre className="bg-black p-6 border border-white/10 text-[10px] font-mono text-accent max-h-64 overflow-auto">
+                    {SQL_SCHEMA}
+                  </pre>
                 </div>
               </div>
             )}

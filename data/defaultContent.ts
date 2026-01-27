@@ -12,7 +12,8 @@ export const defaultContent: SiteContent = {
       youtube: "https://youtube.com",
       twitter: "https://twitter.com",
       linkedin: "https://linkedin.com",
-      facebook: "https://facebook.com"
+      facebook: "https://facebook.com",
+      tiktok: "https://tiktok.com"
     }
   },
   typography: {

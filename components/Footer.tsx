@@ -1,9 +1,16 @@
 
 import React, { useState } from 'react';
-import { Instagram, Youtube, Twitter, Linkedin, Facebook, Loader2, Check } from 'lucide-react';
+import { Instagram, Youtube, Linkedin, Facebook, Loader2, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useSite } from '../contexts/SiteContext';
 import { createClient } from '@supabase/supabase-js';
+
+// Custom TikTok Icon
+const TikTokIcon = ({ size = 24 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    <path d="M19.589 6.686a4.944 4.944 0 0 1-3.218-1.182V13.38c0 3.123-2.532 5.655-5.655 5.655-3.123 0-5.655-2.532-5.655-5.655 0-3.122 2.532-5.655 5.655-5.655.154 0 .305.01.455.03v2.869c-.149-.03-.302-.047-.455-.047-1.531 0-2.771 1.24-2.771 2.771 0 1.53 1.24 2.771 2.771 2.771 1.53 0 2.771-1.24 2.771-2.771V2.606h2.883a4.947 4.947 0 0 0 4.944 4.944v2.883a7.803 7.803 0 0 1-1.455-.133v-3.614z" />
+  </svg>
+);
 
 const Footer: React.FC = () => {
   const { content, dbConfig } = useSite();
@@ -61,12 +68,12 @@ const Footer: React.FC = () => {
 
           {/* Socials & Newsletter */}
           <div className="flex flex-col items-end">
-            <div className="flex space-x-8 mb-12">
+            <div className="flex space-x-8 mb-12 items-center">
+              <a href={branding.socialLinks.tiktok} target="_blank" className="hover:text-accent transition-colors"><TikTokIcon size={24}/></a>
               <a href={branding.socialLinks.instagram} target="_blank" className="hover:text-accent transition-colors"><Instagram size={24}/></a>
-              <a href={branding.socialLinks.youtube} target="_blank" className="hover:text-accent transition-colors"><Youtube size={24}/></a>
               <a href={branding.socialLinks.facebook} target="_blank" className="hover:text-accent transition-colors"><Facebook size={24}/></a>
+              <a href={branding.socialLinks.youtube} target="_blank" className="hover:text-accent transition-colors"><Youtube size={24}/></a>
               <a href={branding.socialLinks.linkedin} target="_blank" className="hover:text-accent transition-colors"><Linkedin size={24}/></a>
-              <a href={branding.socialLinks.twitter} target="_blank" className="hover:text-accent transition-colors"><Twitter size={24}/></a>
             </div>
 
             <div className="w-full max-w-sm">
