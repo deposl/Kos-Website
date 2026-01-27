@@ -71,8 +71,8 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
     window.location.reload(); 
   };
 
-  const fetchData = async () => {
-    setIsLoading(true);
+  const fetchData = async (silent = false) => {
+    if (!silent) setIsLoading(true);
     try {
       const [settingsRes, blogsRes, favsRes] = await Promise.all([
         supabase.from('site_settings').select('*').eq('id', 1).maybeSingle(),
@@ -110,7 +110,7 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err: any) {
       console.error('❌ Sync Error:', err);
     } finally {
-      setIsLoading(false);
+      if (!silent) setIsLoading(false);
     }
   };
 
@@ -193,7 +193,7 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateContent = async (newContent: SiteContent) => {
-    setIsLoading(true);
+    // updateContent no longer sets global isLoading to true to prevent Preloader from showing
     try {
       const { error: sErr } = await supabase.from('site_settings').upsert({
         id: 1,
@@ -233,9 +233,10 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (favsToInsert.length > 0) await supabase.from('favorites').insert(favsToInsert);
 
       localStorage.removeItem(CONTENT_CACHE_KEY);
-      await fetchData();
-    } finally {
-      setIsLoading(false);
+      await fetchData(true); // Silent refresh
+    } catch (err) {
+       console.error('Update Error:', err);
+       throw err;
     }
   };
 

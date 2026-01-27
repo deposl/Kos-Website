@@ -54,6 +54,9 @@ export interface HomeContent {
   serviceImages: string[];
   heroMood: string;
   heroWatermark: string;
+  heroBadge?: string;
+  heroMetadataCreator?: string;
+  heroMetadataYear?: string;
   philosophyLine1: string;
   philosophyLine2: string;
   serviceCardTitle: string;

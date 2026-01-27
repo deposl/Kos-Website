@@ -265,7 +265,11 @@ const AdminDashboard: React.FC = () => {
       await updateContent(localContent);
       setSaveStatus('success');
       setTimeout(() => setSaveStatus('idle'), 3000);
-    } catch (e) { setSaveStatus('error'); } finally { setIsSaving(false); }
+    } catch (e) { 
+      setSaveStatus('error'); 
+    } finally { 
+      setIsSaving(false); 
+    }
   };
 
   const updateSection = (section: keyof typeof localContent, updates: any) => {
@@ -293,9 +297,27 @@ const AdminDashboard: React.FC = () => {
             <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.4em] mt-3">CMS ARCHITECTURE V12.0</p>
           </div>
           <div className="flex space-x-4">
-            <button onClick={handleSave} disabled={isSaving} className={`px-12 py-5 rounded-sm font-black text-xs uppercase tracking-[0.2em] flex items-center ${saveStatus === 'success' ? 'bg-green-500 text-white' : 'bg-accent text-dark'}`}>
-              {isSaving ? <Loader2 className="animate-spin mr-3" size={18} /> : saveStatus === 'success' ? <Check className="mr-3" size={18}/> : <Save className="mr-3 w-4 h-4" />} 
-              {saveStatus === 'success' ? 'Cloud Updated' : 'Push to Cloud'}
+            <button 
+              onClick={handleSave} 
+              disabled={isSaving} 
+              className={`px-12 py-5 rounded-sm font-black text-xs uppercase tracking-[0.2em] flex items-center min-w-[240px] justify-center transition-all ${saveStatus === 'success' ? 'bg-green-500 text-white' : 'bg-accent text-dark'}`}
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 className="animate-spin mr-3" size={18} />
+                  Saving on database...
+                </>
+              ) : saveStatus === 'success' ? (
+                <>
+                  <Check className="mr-3" size={18}/>
+                  Cloud Updated
+                </>
+              ) : (
+                <>
+                  <Save className="mr-3 w-4 h-4" />
+                  Push to Cloud
+                </>
+              )}
             </button>
             <button onClick={logout} className="bg-white/5 px-8 py-5 text-xs font-black uppercase tracking-widest border border-white/5">Logout</button>
           </div>
@@ -381,6 +403,9 @@ const AdminDashboard: React.FC = () => {
                     <InputField label="Hero Accent" value={localContent.home.heroSubTitle} onChange={(v) => updateSection('home', { heroSubTitle: v })} />
                     <InputField label="Mood Tag" value={localContent.home.heroMood} onChange={(v) => updateSection('home', { heroMood: v })} />
                     <InputField label="Background Watermark" value={localContent.home.heroWatermark} onChange={(v) => updateSection('home', { heroWatermark: v })} />
+                    <InputField label="Banner Badge Text" value={localContent.home.heroBadge || ''} placeholder="e.g. Vertical Storytelling Pro" onChange={(v) => updateSection('home', { heroBadge: v })} />
+                    <InputField label="Metadata Creator" value={localContent.home.heroMetadataCreator || ''} placeholder="e.g. VERIFIED CREATOR" onChange={(v) => updateSection('home', { heroMetadataCreator: v })} />
+                    <InputField label="Metadata Year" value={localContent.home.heroMetadataYear || ''} placeholder="e.g. EST. 2024" onChange={(v) => updateSection('home', { heroMetadataYear: v })} />
                   </div>
                   <TextAreaField label="Hero Description" value={localContent.home.heroDescription} onChange={(v) => updateSection('home', { heroDescription: v })} />
                   <MultiImageManager label="Hero Slider Images" images={localContent.home.heroImages} onChange={(v) => updateSection('home', { heroImages: v })} />

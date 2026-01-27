@@ -163,14 +163,18 @@ const Home: React.FC = () => {
           >
             {/* Metadata Strip */}
             <div className="absolute -left-12 top-0 h-full hidden xl:flex flex-col justify-between py-4 border-l border-gray-100 pl-4">
-              <span className="text-[8px] font-black uppercase tracking-[0.4em] rotate-180 [writing-mode:vertical-lr] text-gray-300">EST. 2024</span>
+              <span className="text-[8px] font-black uppercase tracking-[0.4em] rotate-180 [writing-mode:vertical-lr] text-gray-300">
+                {home.heroMetadataYear || 'EST. 2024'}
+              </span>
               <div className="w-px h-12 bg-gray-100 self-center" />
-              <span className="text-[8px] font-black uppercase tracking-[0.4em] rotate-180 [writing-mode:vertical-lr] text-accent">VERIFIED CREATOR</span>
+              <span className="text-[8px] font-black uppercase tracking-[0.4em] rotate-180 [writing-mode:vertical-lr] text-accent">
+                {home.heroMetadataCreator || 'VERIFIED CREATOR'}
+              </span>
             </div>
 
             <motion.div style={{ y: heroTextY, willChange: 'transform' }} className="flex flex-col items-center md:items-start text-center md:text-left mb-10 transform-gpu">
               <span className="inline-flex items-center gap-2 bg-dark text-accent px-4 py-2 rounded-sm text-[9px] font-black uppercase tracking-[0.3em] mb-8">
-                <Zap size={10} fill="currentColor" /> Vertical Storytelling Pro
+                <Zap size={10} fill="currentColor" /> {home.heroBadge || 'Vertical Storytelling Pro'}
               </span>
               
               <h1 className="text-[15vw] md:text-[10vw] font-display font-black uppercase tracking-tighter leading-[0.8] italic mb-0 break-words">
