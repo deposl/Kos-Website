@@ -61,7 +61,12 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const [isAdmin, setIsAdmin] = useState(() => sessionStorage.getItem('is_admin') === 'true');
-  const [isLoading, setIsLoading] = useState(true);
+  
+  // Cache check for initial loading state: If we have cache, don't block with preloader
+  const [isLoading, setIsLoading] = useState(() => {
+    const cached = localStorage.getItem(CONTENT_CACHE_KEY);
+    return !cached;
+  });
 
   const setDbConfig = (config: { url: string; key: string }) => {
     localStorage.setItem('db_url', config.url);
@@ -72,7 +77,12 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const fetchData = async (silent = false) => {
-    if (!silent) setIsLoading(true);
+    // If cache exists and we aren't explicitly forcing a reload, we run in background
+    const hasCache = !!localStorage.getItem(CONTENT_CACHE_KEY);
+    const backgroundSync = silent || hasCache;
+
+    if (!backgroundSync) setIsLoading(true);
+    
     try {
       const [settingsRes, blogsRes, favsRes] = await Promise.all([
         supabase.from('site_settings').select('*').eq('id', 1).maybeSingle(),
@@ -110,7 +120,7 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err: any) {
       console.error('❌ Sync Error:', err);
     } finally {
-      if (!silent) setIsLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -233,7 +243,7 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (favsToInsert.length > 0) await supabase.from('favorites').insert(favsToInsert);
 
       localStorage.removeItem(CONTENT_CACHE_KEY);
-      await fetchData(true); // Silent refresh
+      await fetchData(true); // Silent background refresh
     } catch (err) {
        console.error('Update Error:', err);
        throw err;
