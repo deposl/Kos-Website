@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, useScroll, useTransform, useSpring, AnimatePresence } from 'framer-motion';
+import { motion, useScroll, useTransform, useSpring, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Instagram, Youtube, Twitter, Linkedin, Facebook, ArrowRight, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useSite } from '../contexts/SiteContext';
@@ -15,6 +15,7 @@ const TikTokIcon = ({ size = 20 }: { size?: number }) => (
 const Home: React.FC = () => {
   const { content } = useSite();
   const { home, branding } = content;
+  const shouldReduceMotion = useReducedMotion();
   
   const slideTransition = {
     type: "spring" as const,
@@ -66,30 +67,32 @@ const Home: React.FC = () => {
     offset: ["start end", "end start"]
   });
 
-  // Parallax transforms for Hero
-  const heroTextY = useTransform(scrollY, [0, 800], [0, 80]);
-  const heroImgScale = useTransform(scrollY, [0, 800], [1, 1.15]);
-  const heroBgTextX = useTransform(scrollY, [0, 1000], [0, -300]);
+  // Parallax transforms for Hero - Updated for smoother kinetic feel and mobile stability
+  const rawHeroTextY = useTransform(scrollY, [0, 800], [0, -100]);
+  const heroTextY = useSpring(rawHeroTextY, { stiffness: 40, damping: 25, restDelta: 0.001 });
+  
+  const heroImgScale = useTransform(scrollY, [0, 800], [1, 1.12]);
+  const heroBgTextX = useTransform(scrollY, [0, 1000], [0, -250]);
 
-  // Philosophy Kinetic Scroll with smoother spring settings
+  // Philosophy Kinetic Scroll with heavily damped spring settings for mobile smoothness
   const rawKineticLine1X = useTransform(philosophyProgress, [0, 1], [150, -150]);
   const rawKineticLine2X = useTransform(philosophyProgress, [0, 1], [-150, 150]);
   const rawKineticBgX = useTransform(philosophyProgress, [0, 1], [-300, 300]);
 
-  const kineticLine1X = useSpring(rawKineticLine1X, { stiffness: 50, damping: 25, restDelta: 0.01 });
-  const kineticLine2X = useSpring(rawKineticLine2X, { stiffness: 50, damping: 25, restDelta: 0.01 });
-  const kineticBgX = useSpring(rawKineticBgX, { stiffness: 50, damping: 25, restDelta: 0.01 });
+  const kineticLine1X = useSpring(rawKineticLine1X, { stiffness: 35, damping: 30, restDelta: 0.01 });
+  const kineticLine2X = useSpring(rawKineticLine2X, { stiffness: 35, damping: 30, restDelta: 0.01 });
+  const kineticBgX = useSpring(rawKineticBgX, { stiffness: 35, damping: 30, restDelta: 0.01 });
 
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: { staggerChildren: 0.2 }
+      transition: { staggerChildren: 0.15 }
     }
   };
 
   const itemVariants = {
-    hidden: { y: 30, opacity: 0 },
+    hidden: { y: 20, opacity: 0 },
     visible: {
       y: 0,
       opacity: 1,
@@ -144,7 +147,7 @@ const Home: React.FC = () => {
         {/* Content Column */}
         <div className="w-full md:w-[50%] p-6 sm:p-14 md:p-16 lg:px-24 flex flex-col justify-center relative z-20 bg-white order-2 md:order-1">
           <motion.div
-            initial={{ opacity: 0, y: 40, filter: 'blur(10px)' }}
+            initial={{ opacity: 0, y: 30, filter: shouldReduceMotion ? 'blur(0px)' : 'blur(8px)' }}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
             className="relative transform-gpu"
@@ -283,7 +286,7 @@ const Home: React.FC = () => {
       <section className="py-16 md:py-24 bg-white px-6 border-b border-gray-50 gpu-accelerated">
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-12 lg:gap-32">
           <div className="flex-1 relative">
-             <motion.div initial={{ x: -30, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} viewport={{ once: true }} className="aspect-[4/5] bg-gray-50 overflow-hidden relative shadow-2xl transform-gpu">
+             <motion.div initial={{ x: -20, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} viewport={{ once: true }} className="aspect-[4/5] bg-gray-50 overflow-hidden relative shadow-2xl transform-gpu">
                <img src={home.aboutImage} alt="About" className="w-full h-full object-cover transition-all duration-700 hover:scale-105 grayscale hover:grayscale-0 block" loading="lazy" />
              </motion.div>
           </div>

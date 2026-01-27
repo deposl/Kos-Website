@@ -40,7 +40,9 @@
       }
       html {
         background-color: #000;
-        /* Removed scroll-behavior: smooth to prevent parallax jitter on mobile */
+        /* Prevent scroll jumping during layout shifts */
+        overflow-anchor: none;
+        -webkit-overflow-scrolling: touch;
       }
       body {
         background-color: #ffffff;
@@ -56,8 +58,8 @@
         -webkit-backdrop-filter: blur(20px);
       }
       .gpu-accelerated {
-        transform: translateZ(0);
-        will-change: transform, opacity;
+        transform: translate3d(0, 0, 0);
+        will-change: transform;
         backface-visibility: hidden;
         perspective: 1000px;
       }
