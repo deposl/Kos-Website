@@ -65,6 +65,7 @@ export interface HomeContent {
   stats: { label: string; value: string }[];
   services: { title: string; desc: string }[];
   clients: ClientBrand[];
+  socialProofBar?: string[];
 }
 
 export interface ServiceItem {
@@ -116,6 +117,25 @@ export interface BlogPost {
   seo_description?: string;
 }
 
+export interface ContactContent {
+  seo?: SEOConfig;
+  email: string;
+  phone: string;
+  address: string;
+  fastTrackTitle: string;
+  fastTrackDescription: string;
+  notificationEmails?: string[];
+  senderEmail?: string;
+  thankYouSubject?: string;
+  thankYouMessage?: string;
+}
+
+export interface CustomScripts {
+  header: string;
+  footer: string;
+  css: string;
+}
+
 export interface SiteContent {
   branding: BrandingContent;
   typography: TypographyConfig;
@@ -127,4 +147,6 @@ export interface SiteContent {
   blogs: BlogPost[];
   blogs_seo?: SEOConfig;
   navLinks: NavLink[];
+  contact: ContactContent;
+  customScripts?: CustomScripts;
 }

@@ -35,16 +35,16 @@ export const defaultContent: SiteContent = {
     heroTitle: "GET CONNECTED",
     heroSubTitle: "CONNECTED",
     heroDescription: "Deep strategy. Creative high-impact production. Follow Kosta's Point of view™ on TikTok, Instagram, Facebook or LinkedIn.",
-    heroImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1974&auto=format&fit=crop",
+    heroImage: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=2071&auto=format&fit=crop",
     heroImages: [
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1974&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1552058544-f2b08422138a?q=80&w=1998&auto=format&fit=crop"
+      "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=2071&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?q=80&w=2056&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?q=80&w=2070&auto=format&fit=crop"
     ],
     serviceImages: [
-      "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1557804506-669a67965ba0?q=80&w=2074&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1938&auto=format&fit=crop"
+      "https://images.unsplash.com/photo-1551269901-5c5e14c25df7?q=80&w=2070&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1533750349088-cd871a92f312?q=80&w=2070&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop"
     ],
     heroMood: "Viral Design Mode",
     heroWatermark: "@KOSTAGENARIS",
@@ -58,7 +58,7 @@ export const defaultContent: SiteContent = {
       "Kosta Genaris redefined what it means to be a \"creator\" in the modern age through viral vision and vertical storytelling.",
       "Today, he runs a creative empire focused on amplifying people and brands through the power of high-impact content strategy."
     ],
-    aboutImage: "https://images.unsplash.com/photo-1552058544-f2b08422138a?q=80&w=1998&auto=format&fit=crop",
+    aboutImage: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1974&auto=format&fit=crop",
     stats: [
       { label: "Followers", value: "1.6M" },
       { label: "Likes", value: "42.7M" },
@@ -78,7 +78,8 @@ export const defaultContent: SiteContent = {
       { name: "Adobe", logo: "https://upload.wikimedia.org/wikipedia/commons/8/8d/Adobe_Corporate_Logo.svg" },
       { name: "TikTok", logo: "https://upload.wikimedia.org/wikipedia/en/a/a9/TikTok_logo.svg" },
       { name: "Red Rooster", logo: "https://upload.wikimedia.org/wikipedia/en/2/2a/Red_Rooster_logo.svg" }
-    ]
+    ],
+    socialProofBar: ["MCDONALD'S", "AUSTRALIAN GOVERNMENT", "NIKE", "RED BULL", "SAMSUNG"]
   },
   services: {
     seo: { metaTitle: "Strategy & Creative Support | Kosta Genaris", metaDescription: "TikTok strategy, account audits, viral scripting, and executive positioning." },
@@ -135,5 +136,21 @@ export const defaultContent: SiteContent = {
       seo_title: "The Future of Vertical Content 2025 | Kosta Genaris",
       seo_description: "Explore the 2025 vertical content landscape with Kosta Genaris."
     }
-  ]
+  ],
+  contact: {
+    email: "contact@creatorpro.com",
+    phone: "+1 (888) CREATOR",
+    address: "Los Angeles, CA / Remote",
+    fastTrackTitle: "Fast Track?",
+    fastTrackDescription: "Skip the email and book a direct 1:1 strategy session on my calendar.",
+    notificationEmails: ["kostagenaris3@gmail.com"],
+    senderEmail: "hello@kostagenaris.com",
+    thankYouSubject: "Thank you for reaching out!",
+    thankYouMessage: "We have received your message and our team will get back to you within 24 hours. We appreciate your interest!"
+  },
+  customScripts: {
+    header: "",
+    footer: "",
+    css: ""
+  }
 };

@@ -1,12 +1,20 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle2, Search, TrendingUp, Users, Video, ArrowUpRight } from 'lucide-react';
 import { useSite } from '../contexts/SiteContext';
+import { getCalApi } from "@calcom/embed-react";
 
 const Services: React.FC = () => {
   const { content } = useSite();
   const { services } = content;
+
+  useEffect(() => {
+    (async function () {
+      const cal = await getCalApi({"namespace":"30min"});
+      cal("ui", {"hideEventTypeDetails":false,"layout":"month_view"});
+    })();
+  }, []);
 
   return (
     <div className="pt-20 md:pt-28 pb-12 md:pb-20 bg-white">
@@ -106,11 +114,14 @@ const Services: React.FC = () => {
             {services.ctaTitle.split(' ')[0]} <br /> <span className="text-accent underline decoration-2 md:decoration-4 underline-offset-4 md:underline-offset-8">{services.ctaTitle.split(' ').slice(1).join(' ')}</span>
           </h2>
           <motion.button 
+            data-cal-namespace="30min"
+            data-cal-link="kosta-genaris-4slqyp/30min"
+            data-cal-config='{"layout":"month_view","useSlotsViewOnSmallScreen":"true"}'
             whileHover={{ scale: 1.05, backgroundColor: '#ffffff', color: '#000000' }}
             whileTap={{ scale: 0.95 }}
             className="bg-accent text-dark px-8 md:px-16 py-5 rounded-sm font-black uppercase tracking-[0.4em] text-xs md:text-sm relative z-10 transition-colors shadow-2xl"
           >
-            Start Your Transformation
+            BOOK A FREE CONSULTATION
           </motion.button>
         </motion.section>
       </div>

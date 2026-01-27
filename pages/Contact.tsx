@@ -1,12 +1,14 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Calendar, Mail, MapPin, Phone, Loader2, CheckCircle } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { useSite } from '../contexts/SiteContext';
+import { getCalApi } from "@calcom/embed-react";
 
 const Contact: React.FC = () => {
-  const { dbConfig } = useSite();
+  const { dbConfig, content } = useSite();
+  const contactInfo = content.contact;
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -14,6 +16,14 @@ const Contact: React.FC = () => {
     message: ''
   });
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+  // Cal.com Integration
+  useEffect(() => {
+    (async function () {
+      const cal = await getCalApi({"namespace":"30min"});
+      cal("ui", {"hideEventTypeDetails":false,"layout":"month_view"});
+    })();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,6 +37,10 @@ const Contact: React.FC = () => {
 
       if (error) throw error;
       
+      // NOTE: Email notifications are now handled automatically by a 
+      // Supabase Database Trigger (on_new_inquiry) on the server-side.
+      // This fixes the "Failed to fetch" (CORS) error and secures the API Key.
+
       setStatus('success');
       setFormData({ name: '', email: '', subject: '', message: '' });
     } catch (err) {
@@ -151,10 +165,15 @@ const Contact: React.FC = () => {
               className="bg-accent text-dark p-8 md:p-12 rounded-sm flex flex-col justify-between shadow-xl"
             >
               <div>
-                <h2 className="text-4xl font-display font-black uppercase italic mb-4 tracking-tighter">Fast Track?</h2>
-                <p className="text-lg font-bold mb-6">Skip the email and book a direct 1:1 strategy session on my calendar.</p>
+                <h2 className="text-4xl font-display font-black uppercase italic mb-4 tracking-tighter">{contactInfo.fastTrackTitle}</h2>
+                <p className="text-lg font-bold mb-6">{contactInfo.fastTrackDescription}</p>
               </div>
-              <button className="bg-dark text-white px-8 py-5 rounded-sm font-black uppercase tracking-widest text-xs flex items-center justify-center self-start hover:bg-white hover:text-dark transition-colors">
+              <button 
+                data-cal-namespace="30min"
+                data-cal-link="kosta-genaris-4slqyp/30min"
+                data-cal-config='{"layout":"month_view","useSlotsViewOnSmallScreen":"true"}'
+                className="bg-dark text-white px-8 py-5 rounded-sm font-black uppercase tracking-widest text-xs flex items-center justify-center self-start hover:bg-white hover:text-dark transition-colors"
+              >
                 <Calendar className="mr-2" /> Book a Session
               </button>
             </motion.div>
@@ -171,7 +190,7 @@ const Contact: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-gray-400 font-black uppercase text-[10px] tracking-widest mb-1">Email Us</h3>
-                  <p className="text-dark font-bold text-lg">contact@creatorpro.com</p>
+                  <p className="text-dark font-bold text-lg">{contactInfo.email}</p>
                 </div>
               </div>
               <div className="flex items-start">
@@ -180,7 +199,7 @@ const Contact: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-gray-400 font-black uppercase text-[10px] tracking-widest mb-1">Call Us</h3>
-                  <p className="text-dark font-bold text-lg">+1 (888) CREATOR</p>
+                  <p className="text-dark font-bold text-lg">{contactInfo.phone}</p>
                 </div>
               </div>
               <div className="flex items-start">
@@ -189,7 +208,7 @@ const Contact: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-gray-400 font-black uppercase text-[10px] tracking-widest mb-1">HQ</h3>
-                  <p className="text-dark font-bold text-lg">Los Angeles, CA / Remote</p>
+                  <p className="text-dark font-bold text-lg">{contactInfo.address}</p>
                 </div>
               </div>
             </motion.div>

@@ -4,6 +4,7 @@ import { motion, useScroll, useTransform, useSpring, AnimatePresence, useReduced
 import { Instagram, Youtube, Twitter, Linkedin, Facebook, ArrowRight, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useSite } from '../contexts/SiteContext';
+import { getCalApi } from "@calcom/embed-react";
 
 // Custom TikTok Icon
 const TikTokIcon = ({ size = 20 }: { size?: number }) => (
@@ -23,6 +24,14 @@ const Home: React.FC = () => {
     damping: 25,
     mass: 1
   };
+
+  // Cal.com Integration
+  useEffect(() => {
+    (async function () {
+      const cal = await getCalApi({"namespace":"30min"});
+      cal("ui", {"hideEventTypeDetails":false,"layout":"month_view"});
+    })();
+  }, []);
 
   // Hero Slider Logic
   const heroImages = home.heroImages && home.heroImages.length > 0 ? home.heroImages : [home.heroImage];
@@ -126,7 +135,7 @@ const Home: React.FC = () => {
                   <img 
                     src={img} 
                     alt={`Hero ${i}`} 
-                    className="w-full h-full object-cover grayscale brightness-90 block"
+                    className="w-full h-full object-cover block"
                     loading="eager"
                   />
                 </div>
@@ -175,12 +184,14 @@ const Home: React.FC = () => {
             </p>
             
             <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12 mb-12">
-              <Link 
-                to="/contact" 
+              <button 
+                data-cal-namespace="30min"
+                data-cal-link="kosta-genaris-4slqyp/30min"
+                data-cal-config='{"layout":"month_view","useSlotsViewOnSmallScreen":"true"}'
                 className="bg-dark text-white px-10 py-5 rounded-sm font-black uppercase tracking-[0.25em] text-xs hover:bg-accent hover:text-dark transition-all transform hover:scale-105 shadow-xl w-full md:w-auto text-center"
               >
-                Let's Connect
-              </Link>
+                LET'S CONNECT
+              </button>
               <div className="flex space-x-6 items-center">
                 <motion.a href={branding.socialLinks.tiktok} target="_blank" whileHover={{ y: -5, color: 'var(--accent-color)' }} className="text-dark"><TikTokIcon size={20}/></motion.a>
                 <motion.a href={branding.socialLinks.instagram} target="_blank" whileHover={{ y: -5, color: 'var(--accent-color)' }} className="text-dark"><Instagram size={20}/></motion.a>
@@ -204,11 +215,11 @@ const Home: React.FC = () => {
 
       {/* Social Proof Bar */}
       <section className="py-10 border-b border-gray-100 bg-gray-50 overflow-hidden hidden md:block">
-        <div className="max-w-7xl mx-auto px-6 flex justify-around items-center grayscale opacity-40">
-           {(home.clients || []).slice(0, 5).map((client, i) => (
+        <div className="max-w-7xl mx-auto px-6 flex justify-around items-center opacity-70">
+           {(home.socialProofBar || []).slice(0, 5).map((brandName, i) => (
              <div key={i} className="flex items-center gap-3">
                <span className="text-[10px] text-gray-400 font-black">0{i+1}</span>
-               <span className="font-display font-black uppercase tracking-[0.3em] text-lg">{client.name}</span>
+               <span className="font-display font-black uppercase tracking-[0.3em] text-lg">{brandName}</span>
              </div>
            ))}
         </div>
@@ -253,7 +264,7 @@ const Home: React.FC = () => {
                     <img 
                       src={img} 
                       alt={`Service ${i}`} 
-                      className="w-full h-full object-cover grayscale brightness-90 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-[2000ms] block" 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-all duration-[2000ms] block" 
                       loading="lazy"
                     />
                  </div>
@@ -287,7 +298,7 @@ const Home: React.FC = () => {
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-12 lg:gap-32">
           <div className="flex-1 relative">
              <motion.div initial={{ x: -20, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} viewport={{ once: true }} className="aspect-[4/5] bg-gray-50 overflow-hidden relative shadow-2xl transform-gpu">
-               <img src={home.aboutImage} alt="About" className="w-full h-full object-cover transition-all duration-700 hover:scale-105 grayscale hover:grayscale-0 block" loading="lazy" />
+               <img src={home.aboutImage} alt="About" className="w-full h-full object-cover transition-all duration-700 hover:scale-105 block" loading="lazy" />
              </motion.div>
           </div>
           <div className="flex-1 flex flex-col justify-center">
@@ -318,23 +329,28 @@ const Home: React.FC = () => {
             I WORK WITH INCREDIBLE BRANDS
           </h2>
         </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 grayscale opacity-60">
+        <div className="grid grid-cols-2 lg:grid-cols-4 opacity-80">
           {(home.clients || []).map((client, idx) => (
-            <div key={idx} className="h-40 md:h-64 flex items-center justify-center p-8 md:p-12 border-dark/5 hover:grayscale-0 hover:opacity-100 transition-all border-l border-t last:border-r transform-gpu">
+            <div key={idx} className="h-40 md:h-64 flex items-center justify-center p-8 md:p-12 border-dark/5 hover:opacity-100 transition-all border-l border-t last:border-r transform-gpu">
               <img src={client.logo} alt={client.name} className="max-w-full max-h-full object-contain block" loading="lazy" />
             </div>
           ))}
         </div>
       </section>
 
-      {/* Footer CTA */}
-      <Link to="/contact" className="block relative group overflow-hidden transform-gpu">
+      {/* Footer CTA - Updated for Cal.com Popup and New Text */}
+      <button 
+        data-cal-namespace="30min"
+        data-cal-link="kosta-genaris-4slqyp/30min"
+        data-cal-config='{"layout":"month_view","useSlotsViewOnSmallScreen":"true"}'
+        className="w-full block relative group overflow-hidden transform-gpu text-left"
+      >
          <motion.div whileHover={{ backgroundColor: 'var(--accent-color)', color: '#000000' }} className="bg-dark text-white py-16 md:py-24 text-center transition-colors duration-500 transform-gpu">
            <motion.div className="text-3xl md:text-7xl font-display font-black uppercase tracking-tighter inline-flex items-center italic transform-gpu" whileHover={{ x: 30 }}>
-             LET'S WORK TOGETHER <ArrowRight className="ml-6 md:ml-12 w-10 h-10 md:w-16 md:h-16" />
+             BOOK A FREE CONSULTATION <ArrowRight className="ml-6 md:ml-12 w-10 h-10 md:w-16 md:h-16" />
            </motion.div>
          </motion.div>
-      </Link>
+      </button>
     </div>
   );
 };

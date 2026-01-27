@@ -1,12 +1,20 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Zap, Target, Award, PlayCircle } from 'lucide-react';
 import { useSite } from '../contexts/SiteContext';
+import { getCalApi } from "@calcom/embed-react";
 
 const Endorsements: React.FC = () => {
   const { content } = useSite();
   const { endorsements } = content;
+
+  useEffect(() => {
+    (async function () {
+      const cal = await getCalApi({"namespace":"30min"});
+      cal("ui", {"hideEventTypeDetails":false,"layout":"month_view"});
+    })();
+  }, []);
 
   const getIcon = (title: string) => {
     if (title.includes('Spark')) return Zap;
@@ -67,8 +75,13 @@ const Endorsements: React.FC = () => {
           <p className="text-gray-400 text-lg mb-12 max-w-2xl mx-auto font-medium relative z-10">
             {endorsements.ctaDescription}
           </p>
-          <button className="inline-block bg-accent text-dark px-12 py-5 rounded-sm font-black uppercase tracking-[0.3em] text-sm hover:scale-105 transition-transform relative z-10">
-            Request Media Kit
+          <button 
+            data-cal-namespace="30min"
+            data-cal-link="kosta-genaris-4slqyp/30min"
+            data-cal-config='{"layout":"month_view","useSlotsViewOnSmallScreen":"true"}'
+            className="inline-block bg-accent text-dark px-12 py-5 rounded-sm font-black uppercase tracking-[0.3em] text-sm hover:scale-105 transition-transform relative z-10"
+          >
+            BOOK A FREE CONSULTATION
           </button>
         </div>
       </div>

@@ -11,9 +11,9 @@ import {
   Star, Heart, Briefcase, Share2, Type, Globe, Shield, 
   Mail, MessageSquare, ChevronLeft, Edit3,
   Instagram, Youtube, Twitter, Linkedin, Facebook, User,
-  Zap, Info, BarChart3
+  Zap, Info, BarChart3, Phone, MapPin, Calendar, Code
 } from 'lucide-react';
-import { BlogPost, FavoriteItem, SEOConfig, NavLink, ServiceItem, EndorsementOption, ClientBrand } from '../../types';
+import { BlogPost, FavoriteItem, SEOConfig, NavLink, ServiceItem, EndorsementOption, ClientBrand, CustomScripts } from '../../types';
 
 // Custom TikTok Icon
 const TikTokIcon = ({ size = 20 }: { size?: number }) => (
@@ -22,7 +22,7 @@ const TikTokIcon = ({ size = 20 }: { size?: number }) => (
   </svg>
 );
 
-const SQL_SCHEMA = `-- SUPABASE DATABASE SETUP SCRIPT (V7 - Final Leads & Persistence)
+const SQL_SCHEMA = `-- SUPABASE DATABASE SETUP SCRIPT (V9 - Custom Scripts)
 CREATE TABLE IF NOT EXISTS site_settings (
     id BIGINT PRIMARY KEY,
     branding JSONB DEFAULT '{}'::jsonb,
@@ -34,53 +34,10 @@ CREATE TABLE IF NOT EXISTS site_settings (
     favorites_seo JSONB DEFAULT '{}'::jsonb,
     blogs_seo JSONB DEFAULT '{}'::jsonb,
     typography_data JSONB DEFAULT '{}'::jsonb,
+    contact_data JSONB DEFAULT '{}'::jsonb,
+    custom_scripts JSONB DEFAULT '{"header": "", "footer": "", "css": ""}'::jsonb,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
-
-CREATE TABLE IF NOT EXISTS blogs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    title TEXT,
-    date TEXT,
-    excerpt TEXT,
-    content TEXT,
-    image TEXT,
-    seo_title TEXT,
-    seo_description TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
-);
-
-CREATE TABLE IF NOT EXISTS favorites (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name TEXT,
-    desc TEXT,
-    code TEXT,
-    img TEXT,
-    order_index INTEGER DEFAULT 0,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
-);
-
-CREATE TABLE IF NOT EXISTS subscribers (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    email TEXT UNIQUE NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
-);
-
-CREATE TABLE IF NOT EXISTS inquiries (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name TEXT NOT NULL,
-    email TEXT NOT NULL,
-    subject TEXT,
-    message TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
-);
-
-INSERT INTO site_settings (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
-
-ALTER TABLE site_settings DISABLE ROW LEVEL SECURITY;
-ALTER TABLE blogs DISABLE ROW LEVEL SECURITY;
-ALTER TABLE favorites DISABLE ROW LEVEL SECURITY;
-ALTER TABLE subscribers DISABLE ROW LEVEL SECURITY;
-ALTER TABLE inquiries DISABLE ROW LEVEL SECURITY;
 `;
 
 interface Inquiry {
@@ -120,11 +77,12 @@ const InputField = ({ label, value, onChange, placeholder = "", type = "text" }:
   </div>
 );
 
-const TextAreaField = ({ label, value, onChange, rows = 3 }: { label: string; value: string; onChange: (v: string) => void; rows?: number }) => (
+const TextAreaField = ({ label, value, onChange, rows = 3, placeholder = "" }: { label: string; value: string; onChange: (v: string) => void; rows?: number; placeholder?: string }) => (
   <div className="space-y-2">
     <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">{label}</label>
     <textarea 
       rows={rows} 
+      placeholder={placeholder}
       className="w-full bg-white/5 border border-white/10 p-4 rounded-sm text-sm focus:border-accent outline-none text-white font-medium resize-none" 
       value={value || ''} 
       onChange={(e) => onChange(e.target.value)} 
@@ -265,7 +223,7 @@ const GenericList = <T extends any>({ label, items = [], onAdd, onRemove, onUpda
 
 const AdminDashboard: React.FC = () => {
   const { content, isAdmin, logout, isLoading: isGlobalLoading, updateContent, dbConfig } = useSite();
-  const [activeTab, setActiveTab] = useState<'branding' | 'navigation' | 'home' | 'services' | 'endorsements' | 'blogs' | 'favorites' | 'inquiries' | 'subscribers' | 'system'>('branding');
+  const [activeTab, setActiveTab] = useState<'branding' | 'navigation' | 'home' | 'services' | 'endorsements' | 'favorites' | 'blogs' | 'contact' | 'inquiries' | 'subscribers' | 'scripts' | 'system'>('branding');
   const [localContent, setLocalContent] = useState(content);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -353,8 +311,10 @@ const AdminDashboard: React.FC = () => {
               { id: 'endorsements', icon: Star, label: 'Endorsements' },
               { id: 'favorites', icon: Heart, label: 'Favorites' },
               { id: 'blogs', icon: FileText, label: 'Journal' },
+              { id: 'contact', icon: Phone, label: 'Contact Info' },
               { id: 'inquiries', icon: MessageSquare, label: 'Inquiries' },
               { id: 'subscribers', icon: Mail, label: 'Subscribers' },
+              { id: 'scripts', icon: Code, label: 'Scripts' },
               { id: 'system', icon: Database, label: 'Infrastructure' }
             ].map((tab) => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} className={`w-full flex items-center p-5 rounded-sm text-[10px] font-black uppercase tracking-[0.25em] text-left transition-all ${activeTab === tab.id ? 'bg-accent text-dark' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}>
@@ -411,7 +371,6 @@ const AdminDashboard: React.FC = () => {
                 <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">Home Page Architecture</h3>
                 <SEOEditor config={localContent.home.seo} onChange={(v) => updateSection('home', { seo: v })} />
                 
-                {/* Hero Section */}
                 <section className="bg-white/5 p-8 rounded-sm space-y-8">
                   <div className="flex items-center gap-3 text-accent mb-4">
                     <Zap size={18} />
@@ -427,7 +386,38 @@ const AdminDashboard: React.FC = () => {
                   <MultiImageManager label="Hero Slider Images" images={localContent.home.heroImages} onChange={(v) => updateSection('home', { heroImages: v })} />
                 </section>
 
-                {/* Philosophy Section */}
+                <section className="bg-white/5 p-8 rounded-sm space-y-8">
+                  <div className="flex items-center gap-3 text-accent mb-4">
+                    <Share2 size={18} />
+                    <h4 className="text-[10px] font-black uppercase tracking-widest">Social Proof Bar (Key Partners)</h4>
+                  </div>
+                  <div className="space-y-4">
+                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Manage the brand names appearing in the horizontal numbered bar.</p>
+                    <GenericList<string>
+                      label="Partner Names"
+                      items={localContent.home.socialProofBar}
+                      onAdd={() => updateSection('home', { socialProofBar: [...(localContent.home.socialProofBar || []), 'NEW PARTNER'] })}
+                      onRemove={(idx) => { 
+                        const s = [...(localContent.home.socialProofBar || [])]; 
+                        s.splice(idx, 1); 
+                        updateSection('home', { socialProofBar: s }); 
+                      }}
+                      onUpdate={() => {}}
+                      renderItem={(item, idx) => (
+                        <InputField 
+                          label={`Partner 0${idx + 1}`} 
+                          value={item} 
+                          onChange={(v) => { 
+                            const s = [...(localContent.home.socialProofBar || [])]; 
+                            s[idx] = v; 
+                            updateSection('home', { socialProofBar: s }); 
+                          }} 
+                        />
+                      )}
+                    />
+                  </div>
+                </section>
+
                 <section className="bg-white/5 p-8 rounded-sm space-y-8">
                   <div className="flex items-center gap-3 text-accent mb-4">
                     <Type size={18} />
@@ -439,7 +429,6 @@ const AdminDashboard: React.FC = () => {
                   </div>
                 </section>
 
-                {/* Service Teaser */}
                 <section className="bg-white/5 p-8 rounded-sm space-y-8">
                   <div className="flex items-center gap-3 text-accent mb-4">
                     <Briefcase size={18} />
@@ -466,7 +455,6 @@ const AdminDashboard: React.FC = () => {
                   />
                 </section>
 
-                {/* About Section */}
                 <section className="bg-white/5 p-8 rounded-sm space-y-8">
                   <div className="flex items-center gap-3 text-accent mb-4">
                     <User size={18} />
@@ -491,7 +479,6 @@ const AdminDashboard: React.FC = () => {
                   />
                 </section>
 
-                {/* Clients Section */}
                 <section className="bg-white/5 p-8 rounded-sm space-y-8">
                   <div className="flex items-center gap-3 text-accent mb-4">
                     <BarChart3 size={18} />
@@ -590,6 +577,103 @@ const AdminDashboard: React.FC = () => {
                     </div>
                   )}
                 />
+              </div>
+            )}
+
+            {activeTab === 'contact' && (
+              <div className="space-y-10">
+                <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">Contact Us Page Details</h3>
+                <section className="bg-white/5 p-8 rounded-sm space-y-8">
+                  <div className="flex items-center gap-3 text-accent mb-4">
+                    <Info size={18} />
+                    <h4 className="text-[10px] font-black uppercase tracking-widest">General Info</h4>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <InputField label="Email Address" value={localContent.contact.email} onChange={(v) => updateSection('contact', { email: v })} />
+                    <InputField label="Phone Number" value={localContent.contact.phone} onChange={(v) => updateSection('contact', { phone: v })} />
+                    <InputField label="HQ / Location" value={localContent.contact.address} onChange={(v) => updateSection('contact', { address: v })} />
+                  </div>
+                </section>
+
+                <section className="bg-white/5 p-8 rounded-sm space-y-8">
+                  <div className="flex items-center gap-3 text-accent mb-4">
+                    <Mail size={18} />
+                    <h4 className="text-[10px] font-black uppercase tracking-widest">Email Notifications & Auto-Reply</h4>
+                  </div>
+                  <div className="space-y-6">
+                    <InputField 
+                      label="Sender Address (Domain must be verified in Resend)" 
+                      value={localContent.contact.senderEmail || 'hello@kostagenaris.com'} 
+                      placeholder="hello@kostagenaris.com"
+                      onChange={(v) => updateSection('contact', { senderEmail: v })} 
+                    />
+                    <InputField 
+                      label="Notification Recipients (Comma Separated Emails)" 
+                      value={localContent.contact.notificationEmails?.join(', ') || ''} 
+                      placeholder="email1@example.com, email2@example.com"
+                      onChange={(v) => updateSection('contact', { notificationEmails: v.split(',').map(e => e.trim()).filter(Boolean) })} 
+                    />
+                    <div className="border-t border-white/5 pt-6">
+                      <InputField 
+                        label="Customer Thank-You Subject" 
+                        value={localContent.contact.thankYouSubject || ''} 
+                        onChange={(v) => updateSection('contact', { thankYouSubject: v })} 
+                      />
+                      <TextAreaField 
+                        label="Customer Thank-You Message" 
+                        value={localContent.contact.thankYouMessage || ''} 
+                        rows={4}
+                        onChange={(v) => updateSection('contact', { thankYouMessage: v })} 
+                      />
+                    </div>
+                  </div>
+                </section>
+
+                <section className="bg-white/5 p-8 rounded-sm space-y-8">
+                  <div className="flex items-center gap-3 text-accent mb-4">
+                    <Calendar size={18} />
+                    <h4 className="text-[10px] font-black uppercase tracking-widest">Fast Track Section</h4>
+                  </div>
+                  <div className="space-y-6">
+                    <InputField label="Section Title" value={localContent.contact.fastTrackTitle} onChange={(v) => updateSection('contact', { fastTrackTitle: v })} />
+                    <TextAreaField label="Section Description" value={localContent.contact.fastTrackDescription} onChange={(v) => updateSection('contact', { fastTrackDescription: v })} />
+                  </div>
+                </section>
+              </div>
+            )}
+
+            {activeTab === 'scripts' && (
+              <div className="space-y-10">
+                <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">Scripts & Integration</h3>
+                <section className="bg-white/5 p-8 rounded-sm space-y-8">
+                  <div className="flex items-center gap-3 text-accent mb-4">
+                    <Code size={18} />
+                    <h4 className="text-[10px] font-black uppercase tracking-widest">Global Injections</h4>
+                  </div>
+                  <div className="space-y-8">
+                    <TextAreaField 
+                      label="Header Scripts (Inside <head>)" 
+                      value={localContent.customScripts?.header || ''} 
+                      rows={6}
+                      placeholder="<!-- Paste Google Analytics or GTM code here -->"
+                      onChange={(v) => updateSection('customScripts', { header: v })} 
+                    />
+                    <TextAreaField 
+                      label="Footer Scripts (Before </body>)" 
+                      value={localContent.customScripts?.footer || ''} 
+                      rows={6}
+                      placeholder="<!-- Paste tracking or widget scripts here -->"
+                      onChange={(v) => updateSection('customScripts', { footer: v })} 
+                    />
+                    <TextAreaField 
+                      label="Custom CSS" 
+                      value={localContent.customScripts?.css || ''} 
+                      rows={6}
+                      placeholder="/* Add global CSS overrides here */"
+                      onChange={(v) => updateSection('customScripts', { css: v })} 
+                    />
+                  </div>
+                </section>
               </div>
             )}
 

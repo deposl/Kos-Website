@@ -100,7 +100,9 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
         blogs_seo: settings?.blogs_seo || defaultContent.blogs_seo,
         navLinks: (settings?.nav_links && settings.nav_links.length > 0) ? settings.nav_links : defaultContent.navLinks,
         blogs: (blogs.length > 0) ? blogs : (settingsRes.data ? [] : defaultContent.blogs),
-        favorites: (favs.length > 0) ? favs : (settingsRes.data ? [] : defaultContent.favorites)
+        favorites: (favs.length > 0) ? favs : (settingsRes.data ? [] : defaultContent.favorites),
+        contact: { ...defaultContent.contact, ...(settings?.contact_data || {}) },
+        customScripts: { ...defaultContent.customScripts, ...(settings?.custom_scripts || {}) }
       };
 
       setContent(updatedContent);
@@ -129,6 +131,51 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
       document.documentElement.style.setProperty('--font-h1', `${ty.h1}px`);
       document.documentElement.style.setProperty('--font-h2', `${ty.h2}px`);
     }
+
+    // Custom CSS Injection
+    if (content.customScripts?.css) {
+      let styleTag = document.getElementById('custom-site-css');
+      if (!styleTag) {
+        styleTag = document.createElement('style');
+        styleTag.id = 'custom-site-css';
+        document.head.appendChild(styleTag);
+      }
+      styleTag.innerHTML = content.customScripts.css;
+    }
+
+    // Helper to inject HTML with scripts
+    const injectScripts = (html: string, target: HTMLElement, idPrefix: string) => {
+      if (!html) return;
+      
+      const containerId = `custom-scripts-${idPrefix}`;
+      let container = document.getElementById(containerId);
+      if (container) container.remove();
+      
+      container = document.createElement('div');
+      container.id = containerId;
+      container.style.display = 'none';
+      container.innerHTML = html;
+      
+      const scripts = container.querySelectorAll('script');
+      scripts.forEach((oldScript) => {
+        const newScript = document.createElement('script');
+        Array.from(oldScript.attributes).forEach((attr) => 
+          newScript.setAttribute(attr.name, attr.value)
+        );
+        newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+        oldScript.parentNode?.replaceChild(newScript, oldScript);
+      });
+      
+      target.appendChild(container);
+    };
+
+    if (content.customScripts?.header) {
+      injectScripts(content.customScripts.header, document.head, 'header');
+    }
+    if (content.customScripts?.footer) {
+      injectScripts(content.customScripts.footer, document.body, 'footer');
+    }
+
   }, [content]);
 
   const testConnection = async (): Promise<TestResult> => {
@@ -165,7 +212,9 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
         endorsements_data: newContent.endorsements,
         favorites_seo: newContent.favorites_seo,
         blogs_seo: newContent.blogs_seo,
-        nav_links: newContent.navLinks
+        nav_links: newContent.navLinks,
+        contact_data: newContent.contact,
+        custom_scripts: newContent.customScripts
       }, { onConflict: 'id' });
       
       if (sErr) throw new Error(sErr.message);
