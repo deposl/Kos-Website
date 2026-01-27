@@ -159,7 +159,7 @@ const Home: React.FC = () => {
             initial={{ opacity: 0, y: 30, filter: shouldReduceMotion ? 'blur(0px)' : 'blur(8px)' }}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-            className="relative transform-gpu"
+            className="relative transform-gpu z-30"
           >
             {/* Metadata Strip */}
             <div className="absolute -left-12 top-0 h-full hidden xl:flex flex-col justify-between py-4 border-l border-gray-100 pl-4">
@@ -192,7 +192,7 @@ const Home: React.FC = () => {
                 data-cal-namespace="30min"
                 data-cal-link="kosta-genaris-4slqyp/30min"
                 data-cal-config='{"layout":"month_view","useSlotsViewOnSmallScreen":"true"}'
-                className="bg-dark text-white px-10 py-5 rounded-sm font-black uppercase tracking-[0.25em] text-xs hover:bg-accent hover:text-dark transition-all transform hover:scale-105 shadow-xl w-full md:w-auto text-center"
+                className="bg-dark text-white px-10 py-5 rounded-sm font-black uppercase tracking-[0.25em] text-xs hover:bg-accent hover:text-dark transition-all transform hover:scale-105 shadow-xl w-full md:w-auto text-center cursor-pointer"
               >
                 LET'S CONNECT
               </button>
@@ -206,7 +206,7 @@ const Home: React.FC = () => {
             </div>
           </motion.div>
 
-          <div className="absolute bottom-4 left-8 md:left-24 overflow-hidden hidden md:block opacity-[0.05]">
+          <div className="absolute bottom-4 left-8 md:left-24 overflow-hidden hidden md:block opacity-[0.05] pointer-events-none">
              <motion.h2 
                style={{ x: heroBgTextX, willChange: 'transform' }}
                className="text-[12vw] font-display font-black uppercase leading-none tracking-tighter text-black select-none pointer-events-none whitespace-nowrap transform-gpu"
