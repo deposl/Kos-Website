@@ -71,14 +71,14 @@ const Home: React.FC = () => {
   const heroImgScale = useTransform(scrollY, [0, 800], [1, 1.15]);
   const heroBgTextX = useTransform(scrollY, [0, 1000], [0, -300]);
 
-  // Philosophy Kinetic Scroll
+  // Philosophy Kinetic Scroll with smoother spring settings
   const rawKineticLine1X = useTransform(philosophyProgress, [0, 1], [150, -150]);
   const rawKineticLine2X = useTransform(philosophyProgress, [0, 1], [-150, 150]);
   const rawKineticBgX = useTransform(philosophyProgress, [0, 1], [-300, 300]);
 
-  const kineticLine1X = useSpring(rawKineticLine1X, { stiffness: 100, damping: 30, restDelta: 0.001 });
-  const kineticLine2X = useSpring(rawKineticLine2X, { stiffness: 100, damping: 30, restDelta: 0.001 });
-  const kineticBgX = useSpring(rawKineticBgX, { stiffness: 100, damping: 30, restDelta: 0.001 });
+  const kineticLine1X = useSpring(rawKineticLine1X, { stiffness: 50, damping: 25, restDelta: 0.01 });
+  const kineticLine2X = useSpring(rawKineticLine2X, { stiffness: 50, damping: 25, restDelta: 0.01 });
+  const kineticBgX = useSpring(rawKineticBgX, { stiffness: 50, damping: 25, restDelta: 0.01 });
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -108,21 +108,22 @@ const Home: React.FC = () => {
         {/* Visual Column */}
         <div className="w-full md:w-[50%] h-[50vh] md:h-screen relative overflow-hidden bg-gray-100 order-1 md:order-2 touch-pan-y">
           <motion.div 
-            style={{ scale: heroImgScale }}
-            className="w-full h-full relative"
+            style={{ scale: heroImgScale, willChange: 'transform' }}
+            className="w-full h-full relative transform-gpu"
           >
             {/* Continuous Reel Container */}
             <motion.div 
-              className="flex w-full h-full"
+              className="flex w-full h-full transform-gpu"
               animate={{ x: `-${heroIdx * 100}%` }}
               transition={slideTransition}
+              style={{ willChange: 'transform' }}
             >
               {heroImages.map((img, i) => (
                 <div key={i} className="w-full h-full flex-shrink-0">
                   <img 
                     src={img} 
                     alt={`Hero ${i}`} 
-                    className="w-full h-full object-cover grayscale brightness-90"
+                    className="w-full h-full object-cover grayscale brightness-90 block"
                     loading="eager"
                   />
                 </div>
@@ -146,7 +147,7 @@ const Home: React.FC = () => {
             initial={{ opacity: 0, y: 40, filter: 'blur(10px)' }}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-            className="relative"
+            className="relative transform-gpu"
           >
             {/* Metadata Strip */}
             <div className="absolute -left-12 top-0 h-full hidden xl:flex flex-col justify-between py-4 border-l border-gray-100 pl-4">
@@ -155,7 +156,7 @@ const Home: React.FC = () => {
               <span className="text-[8px] font-black uppercase tracking-[0.4em] rotate-180 [writing-mode:vertical-lr] text-accent">VERIFIED CREATOR</span>
             </div>
 
-            <motion.div style={{ y: heroTextY }} className="flex flex-col items-center md:items-start text-center md:text-left mb-10">
+            <motion.div style={{ y: heroTextY, willChange: 'transform' }} className="flex flex-col items-center md:items-start text-center md:text-left mb-10 transform-gpu">
               <span className="inline-flex items-center gap-2 bg-dark text-accent px-4 py-2 rounded-sm text-[9px] font-black uppercase tracking-[0.3em] mb-8">
                 <Zap size={10} fill="currentColor" /> Vertical Storytelling Pro
               </span>
@@ -189,8 +190,8 @@ const Home: React.FC = () => {
 
           <div className="absolute bottom-4 left-8 md:left-24 overflow-hidden hidden md:block opacity-[0.05]">
              <motion.h2 
-               style={{ x: heroBgTextX }}
-               className="text-[12vw] font-display font-black uppercase leading-none tracking-tighter text-black select-none pointer-events-none whitespace-nowrap"
+               style={{ x: heroBgTextX, willChange: 'transform' }}
+               className="text-[12vw] font-display font-black uppercase leading-none tracking-tighter text-black select-none pointer-events-none whitespace-nowrap transform-gpu"
              >
               {home.heroWatermark}
              </motion.h2>
@@ -213,19 +214,19 @@ const Home: React.FC = () => {
       {/* Philosophy Section */}
       <section 
         ref={philosophyRef}
-        className="py-12 md:py-32 bg-dark text-white relative overflow-hidden flex items-center justify-center min-h-[40vh]"
+        className="py-12 md:py-32 bg-dark text-white relative overflow-hidden flex items-center justify-center min-h-[40vh] gpu-accelerated"
       >
-        <motion.div style={{ x: kineticBgX }} className="absolute inset-0 flex items-center justify-center whitespace-nowrap opacity-[0.03] select-none pointer-events-none">
+        <motion.div style={{ x: kineticBgX, willChange: 'transform' }} className="absolute inset-0 flex items-center justify-center whitespace-nowrap opacity-[0.03] select-none pointer-events-none transform-gpu">
           <span className="text-[35vw] md:text-[60vw] font-display font-black uppercase tracking-tighter italic">STORIES</span>
         </motion.div>
 
         <div className="relative z-10 w-full text-center flex flex-col items-center justify-center">
-          <motion.div style={{ x: kineticLine1X }}>
+          <motion.div style={{ x: kineticLine1X, willChange: 'transform' }} className="transform-gpu">
             <h2 className="text-[11vw] md:text-[9vw] font-display font-black uppercase tracking-tighter leading-none italic whitespace-nowrap">
               {home.philosophyLine1}
             </h2>
           </motion.div>
-          <motion.div style={{ x: kineticLine2X }}>
+          <motion.div style={{ x: kineticLine2X, willChange: 'transform' }} className="transform-gpu">
             <h2 className="text-[11vw] md:text-[9vw] font-display font-black uppercase tracking-tighter leading-none italic text-accent whitespace-nowrap md:-mt-4">
               {home.philosophyLine2}
             </h2>
@@ -234,26 +235,28 @@ const Home: React.FC = () => {
       </section>
 
       {/* Service Teasers */}
-      <section className="pt-16 pb-12 px-6 max-w-7xl mx-auto flex flex-col lg:flex-row gap-20">
-        <motion.div initial={{ opacity: 0, scale: 0.98 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="flex-1 relative group">
+      <section className="pt-16 pb-12 px-6 max-w-7xl mx-auto flex flex-col lg:flex-row gap-12 lg:gap-20">
+        <motion.div initial={{ opacity: 0, scale: 0.98 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="flex-1 relative group transform-gpu">
           <div className="relative w-full aspect-[4/5] bg-gray-50 overflow-hidden shadow-2xl">
              {/* Continuous Reel Container for Services */}
              <motion.div 
-               className="flex w-full h-full"
+               className="flex w-full h-full transform-gpu"
                animate={{ x: `-${serviceIdx * 100}%` }}
                transition={slideTransition}
+               style={{ willChange: 'transform' }}
              >
                {serviceImages.map((img, i) => (
                  <div key={i} className="w-full h-full flex-shrink-0">
                     <img 
                       src={img} 
                       alt={`Service ${i}`} 
-                      className="w-full h-full object-cover grayscale brightness-90 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-[2000ms]" 
+                      className="w-full h-full object-cover grayscale brightness-90 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-[2000ms] block" 
+                      loading="lazy"
                     />
                  </div>
                ))}
              </motion.div>
-             <motion.div initial={{ rotate: 5 }} whileHover={{ rotate: 0, scale: 1.05 }} className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 w-56 h-56 bg-accent text-dark p-10 flex flex-col justify-center shadow-2xl z-20">
+             <motion.div initial={{ rotate: 5 }} whileHover={{ rotate: 0, scale: 1.05 }} className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 w-56 h-56 bg-accent text-dark p-10 flex flex-col justify-center shadow-2xl z-20 transform-gpu">
                 <span className="font-display font-black uppercase text-3xl italic leading-[0.8] mb-3 tracking-tighter">
                   {home.serviceCardTitle.split(' ')[0]} <br/> {home.serviceCardTitle.split(' ').slice(1).join(' ')}
                 </span>
@@ -262,12 +265,12 @@ const Home: React.FC = () => {
           </div>
         </motion.div>
         
-        <motion.div variants={containerVariants} initial="hidden" whileInView="visible" viewport={{ once: true }} className="flex-1 space-y-16 py-10">
+        <motion.div variants={containerVariants} initial="hidden" whileInView="visible" viewport={{ once: true }} className="flex-1 space-y-12 md:space-y-16 py-4 md:py-10">
           {home.services.map((item, i) => (
-            <motion.div key={i} variants={itemVariants} className="max-w-md group">
-              <motion.div whileInView={{ width: '80px' }} initial={{ width: 0 }} className="h-1.5 bg-dark mb-8 origin-left" />
-              <h3 className="text-lg font-black uppercase tracking-[0.3em] mb-5 group-hover:text-accent transition-colors">{item.title}</h3>
-              <p className="text-gray-500 text-sm md:text-base mb-8 leading-relaxed font-medium">{item.desc}</p>
+            <motion.div key={i} variants={itemVariants} className="max-w-md group transform-gpu">
+              <motion.div whileInView={{ width: '80px' }} initial={{ width: 0 }} className="h-1.5 bg-dark mb-6 md:mb-8 origin-left" />
+              <h3 className="text-lg font-black uppercase tracking-[0.3em] mb-4 md:mb-5 group-hover:text-accent transition-colors">{item.title}</h3>
+              <p className="text-gray-500 text-sm md:text-base mb-6 md:mb-8 leading-relaxed font-medium">{item.desc}</p>
               <Link to="/services" className="text-[10px] font-black uppercase tracking-[0.5em] border-b-2 border-gray-100 hover:border-dark pb-3 inline-flex items-center transition-all">
                 EXPLORE <ArrowRight className="ml-4 w-4 h-4 transition-transform group-hover:translate-x-2" />
               </Link>
@@ -276,27 +279,28 @@ const Home: React.FC = () => {
         </motion.div>
       </section>
 
-      {/* About Section */}
-      <section className="py-24 bg-white px-6 border-b border-gray-50">
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-32">
+      {/* About Section - Fixed for Mobile & Optimized */}
+      <section className="py-16 md:py-24 bg-white px-6 border-b border-gray-50 gpu-accelerated">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-12 lg:gap-32">
           <div className="flex-1 relative">
-             <motion.div initial={{ x: -100, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} viewport={{ once: true }} className="aspect-[4/5] bg-gray-50 overflow-hidden relative shadow-2xl">
-               <img src={home.aboutImage} alt="About" className="w-full h-full object-cover transition-all duration-700 hover:scale-105 grayscale hover:grayscale-0" />
+             <motion.div initial={{ x: -30, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} viewport={{ once: true }} className="aspect-[4/5] bg-gray-50 overflow-hidden relative shadow-2xl transform-gpu">
+               <img src={home.aboutImage} alt="About" className="w-full h-full object-cover transition-all duration-700 hover:scale-105 grayscale hover:grayscale-0 block" loading="lazy" />
              </motion.div>
           </div>
           <div className="flex-1 flex flex-col justify-center">
-             <motion.h2 initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} className="text-6xl font-display font-black uppercase tracking-tighter mb-14 leading-[0.9]">
+             <motion.h2 initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="text-4xl sm:text-5xl lg:text-6xl font-display font-black uppercase tracking-tighter mb-8 md:mb-14 leading-[0.9] transform-gpu">
                {home.aboutTitle}
              </motion.h2>
-             <div className="space-y-8 text-gray-500 text-lg leading-relaxed mb-14 max-w-lg font-medium">
+             <div className="space-y-6 md:space-y-8 text-gray-500 text-base md:text-lg leading-relaxed mb-10 md:mb-14 max-w-lg font-medium">
                {home.aboutText.map((p, i) => <p key={i}>{p}</p>)}
              </div>
              
-             <div className="grid grid-cols-3 gap-16 border-t border-gray-100 pt-16">
+             {/* Optimized stats grid for mobile */}
+             <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-16 border-t border-gray-100 pt-10 md:pt-16">
                {home.stats.map((stat, i) => (
                  <div key={i} className="group">
-                    <span className="text-4xl font-display font-black tracking-tighter group-hover:text-accent transition-colors block mb-2">{stat.value}</span>
-                    <span className="text-xs font-black uppercase tracking-[0.3em] text-gray-400">{stat.label}</span>
+                    <span className="text-2xl md:text-4xl font-display font-black tracking-tighter group-hover:text-accent transition-colors block mb-1 md:mb-2">{stat.value}</span>
+                    <span className="text-[9px] md:text-xs font-black uppercase tracking-[0.3em] text-gray-400">{stat.label}</span>
                  </div>
                ))}
              </div>
@@ -306,25 +310,25 @@ const Home: React.FC = () => {
 
       {/* Brands Grid */}
       <section className="bg-white">
-        <div className="w-full border-t border-b border-dark/10 py-14 text-center">
-          <h2 className="text-2xl md:text-5xl font-display font-black uppercase tracking-[0.15em] text-dark leading-none italic">
+        <div className="w-full border-t border-b border-dark/10 py-10 md:py-14 text-center">
+          <h2 className="text-xl md:text-5xl font-display font-black uppercase tracking-[0.15em] text-dark leading-none italic">
             I WORK WITH INCREDIBLE BRANDS
           </h2>
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 grayscale opacity-60">
           {(home.clients || []).map((client, idx) => (
-            <div key={idx} className="h-64 flex items-center justify-center p-12 border-dark/5 hover:grayscale-0 hover:opacity-100 transition-all border-l border-t last:border-r">
-              <img src={client.logo} alt={client.name} className="max-w-full max-h-full object-contain" />
+            <div key={idx} className="h-40 md:h-64 flex items-center justify-center p-8 md:p-12 border-dark/5 hover:grayscale-0 hover:opacity-100 transition-all border-l border-t last:border-r transform-gpu">
+              <img src={client.logo} alt={client.name} className="max-w-full max-h-full object-contain block" loading="lazy" />
             </div>
           ))}
         </div>
       </section>
 
       {/* Footer CTA */}
-      <Link to="/contact" className="block relative group overflow-hidden">
-         <motion.div whileHover={{ backgroundColor: 'var(--accent-color)', color: '#000000' }} className="bg-dark text-white py-24 text-center transition-colors duration-500">
-           <motion.div className="text-4xl md:text-7xl font-display font-black uppercase tracking-tighter inline-flex items-center italic" whileHover={{ x: 30 }}>
-             LET'S WORK TOGETHER <ArrowRight className="ml-12 w-16 h-16" />
+      <Link to="/contact" className="block relative group overflow-hidden transform-gpu">
+         <motion.div whileHover={{ backgroundColor: 'var(--accent-color)', color: '#000000' }} className="bg-dark text-white py-16 md:py-24 text-center transition-colors duration-500 transform-gpu">
+           <motion.div className="text-3xl md:text-7xl font-display font-black uppercase tracking-tighter inline-flex items-center italic transform-gpu" whileHover={{ x: 30 }}>
+             LET'S WORK TOGETHER <ArrowRight className="ml-6 md:ml-12 w-10 h-10 md:w-16 md:h-16" />
            </motion.div>
          </motion.div>
       </Link>

@@ -10,7 +10,8 @@ import {
   Check, Terminal, Copy, Upload, ArrowUp, ArrowDown, Plus, Image as ImageIcon,
   Star, Heart, Briefcase, Share2, Type, Globe, Shield, 
   Mail, MessageSquare, ChevronLeft, Edit3,
-  Instagram, Youtube, Twitter, Linkedin, Facebook, User
+  Instagram, Youtube, Twitter, Linkedin, Facebook, User,
+  Zap, Info, BarChart3
 } from 'lucide-react';
 import { BlogPost, FavoriteItem, SEOConfig, NavLink, ServiceItem, EndorsementOption, ClientBrand } from '../../types';
 
@@ -198,7 +199,7 @@ const ImageUploadField = ({ label, value, onChange, className = "" }: { label: s
   );
 };
 
-const MultiImageManager = ({ label, images, onChange }: { label: string; images: string[]; onChange: (imgs: string[]) => void }) => {
+const MultiImageManager = ({ label, images = [], onChange }: { label: string; images: string[]; onChange: (imgs: string[]) => void }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
 
@@ -362,7 +363,7 @@ const AdminDashboard: React.FC = () => {
             ))}
           </div>
 
-          <div className="flex-grow bg-[#0A0A0A] border border-white/5 p-8 md:p-12 rounded-sm min-h-[700px] shadow-2xl">
+          <div className="flex-grow bg-[#0A0A0A] border border-white/5 p-8 md:p-12 rounded-sm min-h-[700px] shadow-2xl overflow-y-auto">
             {activeTab === 'branding' && (
               <div className="space-y-10">
                 <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">Site Identity</h3>
@@ -407,20 +408,108 @@ const AdminDashboard: React.FC = () => {
 
             {activeTab === 'home' && (
               <div className="space-y-12">
-                <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">Home Page</h3>
+                <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">Home Page Architecture</h3>
                 <SEOEditor config={localContent.home.seo} onChange={(v) => updateSection('home', { seo: v })} />
+                
+                {/* Hero Section */}
                 <section className="bg-white/5 p-8 rounded-sm space-y-8">
+                  <div className="flex items-center gap-3 text-accent mb-4">
+                    <Zap size={18} />
+                    <h4 className="text-[10px] font-black uppercase tracking-widest">Hero Visuals & Text</h4>
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <InputField label="Hero Headline" value={localContent.home.heroTitle} onChange={(v) => updateSection('home', { heroTitle: v })} />
                     <InputField label="Hero Accent" value={localContent.home.heroSubTitle} onChange={(v) => updateSection('home', { heroSubTitle: v })} />
-                    <TextAreaField label="Description" value={localContent.home.heroDescription} onChange={(v) => updateSection('home', { heroDescription: v })} />
+                    <InputField label="Mood Tag" value={localContent.home.heroMood} onChange={(v) => updateSection('home', { heroMood: v })} />
+                    <InputField label="Background Watermark" value={localContent.home.heroWatermark} onChange={(v) => updateSection('home', { heroWatermark: v })} />
                   </div>
-                  <MultiImageManager label="Hero Images" images={localContent.home.heroImages} onChange={(v) => updateSection('home', { heroImages: v })} />
+                  <TextAreaField label="Hero Description" value={localContent.home.heroDescription} onChange={(v) => updateSection('home', { heroDescription: v })} />
+                  <MultiImageManager label="Hero Slider Images" images={localContent.home.heroImages} onChange={(v) => updateSection('home', { heroImages: v })} />
                 </section>
+
+                {/* Philosophy Section */}
                 <section className="bg-white/5 p-8 rounded-sm space-y-8">
-                  <InputField label="About Title" value={localContent.home.aboutTitle} onChange={(v) => updateSection('home', { aboutTitle: v })} />
-                  <TextAreaField label="Bio (Line Separated)" value={localContent.home.aboutText.join('\n')} onChange={(v) => updateSection('home', { aboutText: v.split('\n') })} />
-                  <ImageUploadField label="About Image" value={localContent.home.aboutImage} onChange={(v) => updateSection('home', { aboutImage: v })} />
+                  <div className="flex items-center gap-3 text-accent mb-4">
+                    <Type size={18} />
+                    <h4 className="text-[10px] font-black uppercase tracking-widest">Kinetic Philosophy</h4>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <InputField label="Philosophy Line 1" value={localContent.home.philosophyLine1} onChange={(v) => updateSection('home', { philosophyLine1: v })} />
+                    <InputField label="Philosophy Line 2 (Accent)" value={localContent.home.philosophyLine2} onChange={(v) => updateSection('home', { philosophyLine2: v })} />
+                  </div>
+                </section>
+
+                {/* Service Teaser */}
+                <section className="bg-white/5 p-8 rounded-sm space-y-8">
+                  <div className="flex items-center gap-3 text-accent mb-4">
+                    <Briefcase size={18} />
+                    <h4 className="text-[10px] font-black uppercase tracking-widest">Service Teasers</h4>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <InputField label="Service Card Title" value={localContent.home.serviceCardTitle} onChange={(v) => updateSection('home', { serviceCardTitle: v })} />
+                    <InputField label="Service Card Label" value={localContent.home.serviceCardLabel} onChange={(v) => updateSection('home', { serviceCardLabel: v })} />
+                  </div>
+                  <InputField label="Marquee Running Text" value={localContent.home.marqueeText} onChange={(v) => updateSection('home', { marqueeText: v })} />
+                  <MultiImageManager label="Service Reel Images" images={localContent.home.serviceImages} onChange={(v) => updateSection('home', { serviceImages: v })} />
+                  <GenericList<{ title: string; desc: string }>
+                    label="Services List (Cards)"
+                    items={localContent.home.services}
+                    onAdd={() => updateSection('home', { services: [...localContent.home.services, { title: 'New Service', desc: '' }] })}
+                    onRemove={(idx) => { const s = [...localContent.home.services]; s.splice(idx, 1); updateSection('home', { services: s }); }}
+                    onUpdate={() => {}}
+                    renderItem={(item, idx) => (
+                      <div className="grid grid-cols-1 gap-4">
+                        <InputField label="Title" value={item.title} onChange={(v) => { const s = [...localContent.home.services]; s[idx].title = v; updateSection('home', { services: s }); }} />
+                        <TextAreaField label="Description" value={item.desc} onChange={(v) => { const s = [...localContent.home.services]; s[idx].desc = v; updateSection('home', { services: s }); }} />
+                      </div>
+                    )}
+                  />
+                </section>
+
+                {/* About Section */}
+                <section className="bg-white/5 p-8 rounded-sm space-y-8">
+                  <div className="flex items-center gap-3 text-accent mb-4">
+                    <User size={18} />
+                    <h4 className="text-[10px] font-black uppercase tracking-widest">About / Profile</h4>
+                  </div>
+                  <InputField label="About Section Title" value={localContent.home.aboutTitle} onChange={(v) => updateSection('home', { aboutTitle: v })} />
+                  <TextAreaField label="Bio Paragraphs (Line Separated)" value={localContent.home.aboutText.join('\n')} onChange={(v) => updateSection('home', { aboutText: v.split('\n') })} />
+                  <ImageUploadField label="Profile Image" value={localContent.home.aboutImage} onChange={(v) => updateSection('home', { aboutImage: v })} />
+                  
+                  <GenericList<{ label: string; value: string }>
+                    label="Key Stats"
+                    items={localContent.home.stats}
+                    onAdd={() => updateSection('home', { stats: [...localContent.home.stats, { label: 'Stat Name', value: '0' }] })}
+                    onRemove={(idx) => { const s = [...localContent.home.stats]; s.splice(idx, 1); updateSection('home', { stats: s }); }}
+                    onUpdate={() => {}}
+                    renderItem={(item, idx) => (
+                      <div className="grid grid-cols-2 gap-4">
+                        <InputField label="Stat Label" value={item.label} onChange={(v) => { const s = [...localContent.home.stats]; s[idx].label = v; updateSection('home', { stats: s }); }} />
+                        <InputField label="Value (e.g. 1.6M)" value={item.value} onChange={(v) => { const s = [...localContent.home.stats]; s[idx].value = v; updateSection('home', { stats: s }); }} />
+                      </div>
+                    )}
+                  />
+                </section>
+
+                {/* Clients Section */}
+                <section className="bg-white/5 p-8 rounded-sm space-y-8">
+                  <div className="flex items-center gap-3 text-accent mb-4">
+                    <BarChart3 size={18} />
+                    <h4 className="text-[10px] font-black uppercase tracking-widest">Brand Partners</h4>
+                  </div>
+                  <GenericList<ClientBrand>
+                    label="Client Logos"
+                    items={localContent.home.clients}
+                    onAdd={() => updateSection('home', { clients: [...localContent.home.clients, { name: 'Brand Name', logo: '' }] })}
+                    onRemove={(idx) => { const c = [...localContent.home.clients]; c.splice(idx, 1); updateSection('home', { clients: c }); }}
+                    onUpdate={() => {}}
+                    renderItem={(item, idx) => (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                        <InputField label="Brand Name" value={item.name} onChange={(v) => { const c = [...localContent.home.clients]; c[idx].name = v; updateSection('home', { clients: c }); }} />
+                        <ImageUploadField label="Logo (SVG/PNG preferred)" value={item.logo} onChange={(v) => { const c = [...localContent.home.clients]; c[idx].logo = v; updateSection('home', { clients: c }); }} />
+                      </div>
+                    )}
+                  />
                 </section>
               </div>
             )}

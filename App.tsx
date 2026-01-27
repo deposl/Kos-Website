@@ -43,14 +43,6 @@ const Preloader: React.FC<{ logoText: string, logoSubText: string }> = ({ logoTe
         <span className="block">{logoSubText}</span>
       </div>
     </motion.div>
-    <motion.div 
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 0.4, y: 0 }}
-      transition={{ delay: 0.5 }}
-      className="mt-12 text-white text-[10px] font-black uppercase tracking-[0.5em]"
-    >
-      Syncing Environment
-    </motion.div>
   </motion.div>
 );
 

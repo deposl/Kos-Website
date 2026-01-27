@@ -39,8 +39,8 @@
         --accent-color: #ccff00;
       }
       html {
-        scroll-behavior: smooth;
         background-color: #000;
+        /* Removed scroll-behavior: smooth to prevent parallax jitter on mobile */
       }
       body {
         background-color: #ffffff;
@@ -57,9 +57,9 @@
       }
       .gpu-accelerated {
         transform: translateZ(0);
-        backface-visibility: hidden;
-        perspective: 1000;
         will-change: transform, opacity;
+        backface-visibility: hidden;
+        perspective: 1000px;
       }
       ::-webkit-scrollbar {
         width: 6px;
