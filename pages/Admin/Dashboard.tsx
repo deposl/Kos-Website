@@ -111,7 +111,7 @@ const FontSelectField = ({ label, value, options, onChange }: { label: string; v
         className="w-full bg-white/5 border border-white/10 p-4 rounded-sm text-sm focus:border-accent outline-none text-white font-medium flex justify-between items-center group"
       >
         <span style={{ fontFamily: `'${value}', sans-serif` }}>{value}</span>
-        <ChevronDown size={14} className={`text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown size={14} className={`text-gray-500 transition-transform ${isOpen ? 'rotate-180' : 'rotate-0'}`} />
       </button>
 
       <AnimatePresence>
@@ -436,6 +436,7 @@ const AdminDashboard: React.FC = () => {
                   <InputField label="Logo Sub-text" value={localContent.branding.logoSubText} onChange={(v) => updateSection('branding', { logoSubText: v })} />
                   <InputField label="Accent HEX" value={localContent.branding.accentColor} onChange={(v) => updateSection('branding', { accentColor: v })} />
                   <InputField label="Admin Access Key" value={localContent.branding.adminKey || ''} onChange={(v) => updateSection('branding', { adminKey: v })} />
+                  <ImageUploadField label="Site Favicon (1:1)" value={localContent.branding.favicon || ''} onChange={(v) => updateSection('branding', { favicon: v })} />
                 </div>
 
                 <div className="pt-10 border-t border-white/5">
