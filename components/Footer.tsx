@@ -56,7 +56,7 @@ const Footer: React.FC = () => {
               <li><Link to="/services" className="hover:text-accent border-b border-gray-800 pb-1 inline-block transition-colors">TIKTOK CONSULTING</Link></li>
               <li><Link to="/endorsements" className="hover:text-accent border-b border-gray-800 pb-1 inline-block transition-colors">ENDORSEMENTS</Link></li>
               <li><Link to="/blog" className="hover:text-accent border-b border-gray-800 pb-1 inline-block transition-colors">JOURNAL / BLOG</Link></li>
-              <li><Link to="/favorites" className="hover:text-accent border-b border-gray-800 pb-1 inline-block transition-colors">SEV'S FAVOURITE THINGS</Link></li>
+              <li><Link to="/favorites" className="hover:text-accent border-b border-gray-800 pb-1 inline-block transition-colors">KOSTA's FAVOURITE THINGS</Link></li>
               <li><Link to="/contact" className="hover:text-accent border-b border-gray-800 pb-1 inline-block transition-colors">CONTACT</Link></li>
             </ul>
           </div>
