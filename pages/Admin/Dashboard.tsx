@@ -11,8 +11,9 @@ import {
   Star, Heart, Briefcase, Share2, Type, Globe, Shield, 
   Mail, MessageSquare, ChevronLeft, Edit3,
   Instagram, Youtube, Twitter, Linkedin, Facebook, User,
-  Zap, Info, BarChart3, Phone, MapPin, Calendar, Code
+  Zap, Info, BarChart3, Phone, MapPin, Calendar, Code, ChevronDown
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { BlogPost, FavoriteItem, SEOConfig, NavLink, ServiceItem, EndorsementOption, ClientBrand, CustomScripts } from '../../types';
 
 // Custom TikTok Icon
@@ -39,6 +40,17 @@ CREATE TABLE IF NOT EXISTS site_settings (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 `;
+
+const FONT_OPTIONS = {
+  display: [
+    'Montserrat', 'Playfair Display', 'Oswald', 'Bebas Neue', 'Syncopate', 
+    'Archivo Black', 'Unbounded', 'Syne', 'Righteous', 'Space Grotesk', 'Anton'
+  ],
+  sans: [
+    'Inter', 'Roboto', 'Poppins', 'Lato', 'Open Sans', 'Work Sans', 
+    'DM Sans', 'Plus Jakarta Sans', 'Manrope', 'Sora', 'Quicksand'
+  ]
+};
 
 interface Inquiry {
   id: string;
@@ -76,6 +88,59 @@ const InputField = ({ label, value, onChange, placeholder = "", type = "text" }:
     />
   </div>
 );
+
+const FontSelectField = ({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (v: string) => void }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div className="space-y-2 relative" ref={containerRef}>
+      <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">{label}</label>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full bg-white/5 border border-white/10 p-4 rounded-sm text-sm focus:border-accent outline-none text-white font-medium flex justify-between items-center group"
+      >
+        <span style={{ fontFamily: `'${value}', sans-serif` }}>{value}</span>
+        <ChevronDown size={14} className={`text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="absolute z-50 w-full mt-2 bg-[#0F0F0F] border border-white/10 rounded-sm shadow-2xl max-h-60 overflow-y-auto"
+          >
+            {options.map((font) => (
+              <button
+                key={font}
+                onClick={() => {
+                  onChange(font);
+                  setIsOpen(false);
+                }}
+                className={`w-full text-left px-5 py-4 hover:bg-accent hover:text-dark transition-colors border-b border-white/5 last:border-0 ${value === font ? 'bg-accent/10 text-accent' : 'text-gray-300'}`}
+                style={{ fontFamily: `'${font}', sans-serif` }}
+              >
+                {font}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
 
 const TextAreaField = ({ label, value, onChange, rows = 3, placeholder = "" }: { label: string; value: string; onChange: (v: string) => void; rows?: number; placeholder?: string }) => (
   <div className="space-y-2">
@@ -237,6 +302,22 @@ const AdminDashboard: React.FC = () => {
     setLocalContent(content);
   }, [content]);
 
+  // Load fonts for preview in dropdowns
+  useEffect(() => {
+    const allFonts = [...FONT_OPTIONS.display, ...FONT_OPTIONS.sans];
+    const familyParam = allFonts.map(f => `family=${f.replace(/\s+/g, '+')}:wght@400;700;800;900`).join('&');
+    const fontUrl = `https://fonts.googleapis.com/css2?${familyParam}&display=swap`;
+    
+    let linkTag = document.getElementById('admin-preview-fonts') as HTMLLinkElement;
+    if (!linkTag) {
+      linkTag = document.createElement('link');
+      linkTag.id = 'admin-preview-fonts';
+      linkTag.rel = 'stylesheet';
+      document.head.appendChild(linkTag);
+    }
+    linkTag.href = fontUrl;
+  }, []);
+
   useEffect(() => {
     if (!isAdmin && sessionStorage.getItem('is_admin') !== 'true') navigate('/admin');
   }, [isAdmin, navigate]);
@@ -356,6 +437,26 @@ const AdminDashboard: React.FC = () => {
                   <InputField label="Accent HEX" value={localContent.branding.accentColor} onChange={(v) => updateSection('branding', { accentColor: v })} />
                   <InputField label="Admin Access Key" value={localContent.branding.adminKey || ''} onChange={(v) => updateSection('branding', { adminKey: v })} />
                 </div>
+
+                <div className="pt-10 border-t border-white/5">
+                   <h4 className="text-[10px] font-black uppercase tracking-widest text-accent mb-6">Typography System</h4>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FontSelectField 
+                        label="Display Font Family (Headings)" 
+                        value={localContent.typography.displayFont || 'Montserrat'} 
+                        options={FONT_OPTIONS.display}
+                        onChange={(v) => updateSection('typography', { displayFont: v })} 
+                      />
+                      <FontSelectField 
+                        label="Sans Font Family (Body & UI)" 
+                        value={localContent.typography.sansFont || 'Inter'} 
+                        options={FONT_OPTIONS.sans}
+                        onChange={(v) => updateSection('typography', { sansFont: v })} 
+                      />
+                   </div>
+                   <p className="text-[9px] text-gray-600 mt-4 uppercase tracking-widest font-bold">Note: The dropdown previews each font in its actual style.</p>
+                </div>
+
                 <div className="pt-10 border-t border-white/5">
                    <h4 className="text-[10px] font-black uppercase tracking-widest text-accent mb-6">Social Link Engine</h4>
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

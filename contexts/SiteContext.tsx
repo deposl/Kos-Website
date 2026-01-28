@@ -104,7 +104,7 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
           ...(settings?.branding || {}),
           adminKey: settings?.admin_key || 'admin123'
         },
-        typography: settings?.typography_data || content.typography || defaultContent.typography,
+        typography: settings?.typography_data ? { ...defaultContent.typography, ...settings.typography_data } : content.typography || defaultContent.typography,
         home: settings?.home_data ? { ...settings.home_data } : content.home,
         services: settings?.services_data ? { ...settings.services_data } : content.services,
         endorsements: settings?.endorsements_data ? { ...settings.endorsements_data } : content.endorsements,
@@ -142,6 +142,33 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
       document.documentElement.style.setProperty('--font-body', `${ty.body}px`);
       document.documentElement.style.setProperty('--font-h1', `${ty.h1}px`);
       document.documentElement.style.setProperty('--font-h2', `${ty.h2}px`);
+
+      // Dynamic Font Family Injection
+      if (ty.displayFont) {
+        document.documentElement.style.setProperty('--font-display', `'${ty.displayFont}', Montserrat, sans-serif`);
+      }
+      if (ty.sansFont) {
+        document.documentElement.style.setProperty('--font-sans', `'${ty.sansFont}', Inter, sans-serif`);
+      }
+
+      // Load fonts from Google Fonts if customized
+      const fontsToLoad = [];
+      if (ty.displayFont && ty.displayFont !== 'Montserrat') fontsToLoad.push(ty.displayFont);
+      if (ty.sansFont && ty.sansFont !== 'Inter') fontsToLoad.push(ty.sansFont);
+
+      if (fontsToLoad.length > 0) {
+        const familyParam = fontsToLoad.map(f => `family=${f.replace(/\s+/g, '+')}:wght@400;700;800;900`).join('&');
+        const fontUrl = `https://fonts.googleapis.com/css2?${familyParam}&display=swap`;
+        
+        let linkTag = document.getElementById('dynamic-google-fonts') as HTMLLinkElement;
+        if (!linkTag) {
+          linkTag = document.createElement('link');
+          linkTag.id = 'dynamic-google-fonts';
+          linkTag.rel = 'stylesheet';
+          document.head.appendChild(linkTag);
+        }
+        linkTag.href = fontUrl;
+      }
     }
 
     // Custom CSS Injection

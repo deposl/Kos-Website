@@ -21,7 +21,9 @@ export const defaultContent: SiteContent = {
     small: 13.5,
     body: 21,
     h1: 120,
-    h2: 80
+    h2: 80,
+    displayFont: 'Montserrat',
+    sansFont: 'Inter'
   },
   navLinks: [
     { id: '1', name: 'Consulting', path: '/services', isExternal: false, isButton: false },

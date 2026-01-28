@@ -27,8 +27,8 @@
               card: '#080808',
             },
             fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-              display: ['Montserrat', 'sans-serif'],
+              sans: ['var(--font-sans)', 'Inter', 'sans-serif'],
+              display: ['var(--font-display)', 'Montserrat', 'sans-serif'],
             },
           },
         },
@@ -37,6 +37,8 @@
     <style>
       :root {
         --accent-color: #ccff00;
+        --font-display: 'Montserrat', sans-serif;
+        --font-sans: 'Inter', sans-serif;
       }
       html {
         background-color: #000;
@@ -50,6 +52,7 @@
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         overflow-x: hidden;
+        font-family: var(--font-sans);
       }
       
       .glass {
@@ -73,7 +76,7 @@
         background: #000000;
       }
       .font-display {
-        font-family: 'Montserrat', sans-serif;
+        font-family: var(--font-display);
       }
       .text-hollow {
         -webkit-text-stroke: 1.2px black;
@@ -103,7 +106,7 @@
         background: rgba(255,255,255,0.02);
         border-radius: 0 0 4px 4px;
         min-height: 300px;
-        font-family: 'Inter', sans-serif;
+        font-family: var(--font-sans);
         font-size: 16px;
       }
       .ql-snow .ql-stroke { stroke: #fff !important; }

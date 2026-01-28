@@ -18,6 +18,8 @@ export interface TypographyConfig {
   body: number;
   h1: number;
   h2: number;
+  displayFont?: string;
+  sansFont?: string;
 }
 
 export interface SocialLinks {
