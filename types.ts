@@ -39,6 +39,7 @@ export interface BrandingContent {
   favicon?: string;
   adminKey?: string;
   socialLinks: SocialLinks;
+  isUnderConstruction?: boolean;
 }
 
 export interface ClientBrand {

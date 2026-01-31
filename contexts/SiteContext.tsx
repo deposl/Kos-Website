@@ -246,7 +246,8 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
           logoText: newContent.branding.logoText,
           logoSubText: newContent.branding.logoSubText,
           favicon: newContent.branding.favicon,
-          socialLinks: newContent.branding.socialLinks
+          socialLinks: newContent.branding.socialLinks,
+          isUnderConstruction: newContent.branding.isUnderConstruction
         },
         typography_data: newContent.typography,
         admin_key: newContent.branding.adminKey || 'admin123',

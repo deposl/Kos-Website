@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { HashRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -46,8 +46,29 @@ const Preloader: React.FC<{ logoText: string, logoSubText: string }> = ({ logoTe
   </motion.div>
 );
 
+const UnderConstruction: React.FC<{ logoText: string, logoSubText: string }> = ({ logoText, logoSubText }) => (
+  <div className="fixed inset-0 z-[9999] bg-black text-white flex flex-col items-center justify-center p-6 text-center">
+    <div className="w-[120px] h-[120px] md:w-[160px] md:h-[160px] bg-white rounded-full flex items-center justify-center p-4 border border-white/20 shadow-[0_0_50px_rgba(255,255,255,0.15)] overflow-hidden mb-12">
+      <div className="text-black font-display font-black text-[14px] md:text-[18px] leading-[0.8] text-center tracking-tighter flex flex-col items-center justify-center h-full uppercase">
+        <span className="block">{logoText}</span>
+        <span className="block">{logoSubText}</span>
+      </div>
+    </div>
+    <h1 className="text-4xl md:text-6xl font-display font-black uppercase tracking-tighter mb-6">Website Under Construction</h1>
+    <p className="text-gray-500 font-bold uppercase tracking-widest text-xs md:text-sm max-w-md">
+      We are currently improving our digital experience. Please check back soon.
+    </p>
+  </div>
+);
+
 const AppContent: React.FC = () => {
-  const { isLoading, content } = useSite();
+  const { isLoading, content, isAdmin } = useSite();
+  const location = useLocation();
+
+  // Logic for Under Construction Mode
+  // Show if enabled AND user is NOT on admin routes AND NOT logged in as admin
+  const isMaintenanceMode = content.branding.isUnderConstruction;
+  const isRestricted = isMaintenanceMode && !isAdmin && !location.pathname.startsWith('/admin');
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -60,7 +81,12 @@ const AppContent: React.FC = () => {
         )}
       </AnimatePresence>
       
-      {!isLoading && (
+      {!isLoading && isRestricted ? (
+        <UnderConstruction 
+          logoText={content.branding.logoText} 
+          logoSubText={content.branding.logoSubText} 
+        />
+      ) : !isLoading && (
         <>
           <Navbar />
           <main className="flex-grow">

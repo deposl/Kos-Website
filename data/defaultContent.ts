@@ -7,6 +7,7 @@ export const defaultContent: SiteContent = {
     accentColor: "#ccff00",
     logoText: "KOSTA",
     logoSubText: "GENARIS",
+    isUnderConstruction: false,
     socialLinks: {
       instagram: "https://instagram.com",
       youtube: "https://youtube.com",

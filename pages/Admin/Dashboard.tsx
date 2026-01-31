@@ -11,7 +11,7 @@ import {
   Star, Heart, Briefcase, Share2, Type, Globe, Shield, 
   Mail, MessageSquare, ChevronLeft, Edit3,
   Instagram, Youtube, Twitter, Linkedin, Facebook, User,
-  Zap, Info, BarChart3, Phone, MapPin, Calendar, Code, ChevronDown
+  Zap, Info, BarChart3, Phone, MapPin, Calendar, Code, ChevronDown, ToggleLeft, ToggleRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BlogPost, FavoriteItem, SEOConfig, NavLink, ServiceItem, EndorsementOption, ClientBrand, CustomScripts } from '../../types';
@@ -39,6 +39,11 @@ CREATE TABLE IF NOT EXISTS site_settings (
     custom_scripts JSONB DEFAULT '{"header": "", "footer": "", "css": ""}'::jsonb,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
+
+-- ADDING MAINTENANCE MODE FLAG TO EXISTING DATA
+UPDATE site_settings 
+SET branding = branding || '{"isUnderConstruction": false}'::jsonb 
+WHERE id = 1;
 `;
 
 const FONT_OPTIONS = {
@@ -429,7 +434,18 @@ const AdminDashboard: React.FC = () => {
           <div className="flex-grow bg-[#0A0A0A] border border-white/5 p-8 md:p-12 rounded-sm min-h-[700px] shadow-2xl overflow-y-auto">
             {activeTab === 'branding' && (
               <div className="space-y-10">
-                <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">Site Identity</h3>
+                <div className="flex justify-between items-center">
+                   <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter">Site Identity</h3>
+                   <div className="flex items-center gap-4 bg-white/5 p-3 rounded-sm border border-white/10">
+                     <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Development Mode</span>
+                     <button 
+                       onClick={() => updateSection('branding', { isUnderConstruction: !localContent.branding.isUnderConstruction })}
+                       className={`relative w-12 h-6 rounded-full transition-colors ${localContent.branding.isUnderConstruction ? 'bg-red-500' : 'bg-green-500'}`}
+                     >
+                       <span className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform ${localContent.branding.isUnderConstruction ? 'translate-x-6' : 'translate-x-0'}`} />
+                     </button>
+                   </div>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <InputField label="Site Name" value={localContent.branding.siteName} onChange={(v) => updateSection('branding', { siteName: v })} />
                   <InputField label="Logo Text" value={localContent.branding.logoText} onChange={(v) => updateSection('branding', { logoText: v })} />
