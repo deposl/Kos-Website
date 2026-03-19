@@ -5,6 +5,7 @@ import { Instagram, Youtube, Twitter, Linkedin, Facebook, ArrowRight, Zap } from
 import { Link } from 'react-router-dom';
 import { useSite } from '../contexts/SiteContext';
 import { getCalApi } from "@calcom/embed-react";
+import { PageSections } from '../components/PageSections';
 
 // Custom TikTok Icon
 const TikTokIcon = ({ size = 20 }: { size?: number }) => (
@@ -50,7 +51,17 @@ const Home: React.FC = () => {
   }, [heroIdx, heroImages.length]);
 
   // Service Slider Logic
-  const serviceImages = home.serviceImages && home.serviceImages.length > 0 ? home.serviceImages : ["https://images.unsplash.com/photo-1542038784456-1ea8e935640e?q=80&w=2070&auto=format&fit=crop"];
+  const rawServiceImages = home.serviceImages && home.serviceImages.length > 0 ? home.serviceImages : [];
+  const validServiceImages = rawServiceImages.filter(img => typeof img === 'string' && img.trim() !== '');
+  
+  const serviceImages = validServiceImages.length > 0 
+    ? validServiceImages 
+    : [
+        "https://images.unsplash.com/photo-1551269901-5c5e14c25df7?q=80&w=2070&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1533750349088-cd871a92f312?q=80&w=2070&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop"
+      ];
+  
   const [[serviceIdx, serviceDirection], setServicePage] = useState([0, 0]);
 
   const paginateService = (newDirection: number) => {
@@ -341,6 +352,9 @@ const Home: React.FC = () => {
           ))}
         </div>
       </section>
+
+      {/* Custom Sections */}
+      <PageSections sections={home.sections} />
 
       {/* Footer CTA - Updated for Cal.com Popup and New Text */}
       <button 

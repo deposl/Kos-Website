@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Zap, Target, Award, PlayCircle } from 'lucide-react';
 import { useSite } from '../contexts/SiteContext';
 import { getCalApi } from "@calcom/embed-react";
+import { PageSections } from '../components/PageSections';
 
 const Endorsements: React.FC = () => {
   const { content } = useSite();
@@ -65,6 +66,11 @@ const Endorsements: React.FC = () => {
               </motion.div>
             );
           })}
+        </div>
+
+        {/* Custom Sections */}
+        <div className="mb-24">
+          <PageSections sections={endorsements.sections} />
         </div>
 
         <div className="bg-dark rounded-sm p-12 md:p-20 text-center text-white relative overflow-hidden">

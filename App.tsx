@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -72,6 +72,7 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
+      {/* Preloader overlays on top — real content renders immediately underneath */}
       <AnimatePresence>
         {isLoading && (
           <Preloader 
@@ -80,13 +81,13 @@ const AppContent: React.FC = () => {
           />
         )}
       </AnimatePresence>
-      
-      {!isLoading && isRestricted ? (
+
+      {isRestricted ? (
         <UnderConstruction 
           logoText={content.branding.logoText} 
           logoSubText={content.branding.logoSubText} 
         />
-      ) : !isLoading && (
+      ) : (
         <>
           <Navbar />
           <main className="flex-grow">

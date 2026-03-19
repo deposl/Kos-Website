@@ -14,7 +14,7 @@ import {
   Zap, Info, BarChart3, Phone, MapPin, Calendar, Code, ChevronDown, ToggleLeft, ToggleRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BlogPost, FavoriteItem, SEOConfig, NavLink, ServiceItem, EndorsementOption, ClientBrand, CustomScripts } from '../../types';
+import { BlogPost, FavoriteItem, SEOConfig, NavLink, ServiceItem, EndorsementOption, ClientBrand, CustomScripts, PageSection, RichTextSection, HeroBannerSection, TextImageSection, HTMLSection, FAQSection, BlogPostsSection, GallerySection, VideoSection } from '../../types';
 
 // Custom TikTok Icon
 const TikTokIcon = ({ size = 20 }: { size?: number }) => (
@@ -291,9 +291,504 @@ const GenericList = <T extends any>({ label, items = [], onAdd, onRemove, onUpda
   </div>
 );
 
+// ─── Sections Manager ────────────────────────────────────────────────────────
+
+
+const PAGE_TARGETS = [
+  { key: 'home_sections',           label: 'Home Page',       path: 'home' as const,          field: 'sections' as const },
+  { key: 'services_sections',       label: 'Services',        path: 'services' as const,      field: 'sections' as const },
+  { key: 'endorsements_sections',   label: 'Endorsements',    path: 'endorsements' as const,  field: 'sections' as const },
+  { key: 'contact_sections',        label: 'Contact Info',    path: 'contact' as const,       field: 'sections' as const },
+  { key: 'blog_page_sections',      label: 'Blog Index',      path: null,                     field: 'blog_page_sections' as const },
+  { key: 'favorites_page_sections', label: 'Favorites Page',  path: null,                     field: 'favorites_page_sections' as const },
+];
+
+const SECTION_TYPE_OPTIONS = [
+  { value: 'rich-text',   label: '📝 Rich Text Block' },
+  { value: 'hero-banner', label: '🖼 Hero Banner' },
+  { value: 'text-image',  label: '↔ Text + Image Column' },
+  { value: 'faq',         label: '❓ FAQ / Accordion' },
+  { value: 'blog-posts',  label: '📰 Featured Blog Posts' },
+  { value: 'gallery',     label: '🖼 Image Gallery' },
+  { value: 'video',       label: '▶ Video Embed' },
+  { value: 'html',        label: '</> Custom HTML / Embed' },
+];
+
+const newSection = (type: string): PageSection => {
+  const base = { id: Date.now().toString(), order: 0 };
+  if (type === 'rich-text')   return { ...base, type: 'rich-text',   content: '<p>Your content here...</p>' } as RichTextSection;
+  if (type === 'hero-banner') return { ...base, type: 'hero-banner', bannerType: 'full', title: 'Section Title', subtitle: '', description: '', image: '', ctaText: '', ctaLink: '' } as HeroBannerSection;
+  if (type === 'text-image')  return { ...base, type: 'text-image',  layout: 'text-left', title: 'Section Title', content: 'Your body content here.', image: '', ctaText: '', ctaLink: '' } as TextImageSection;
+  if (type === 'faq')         return { ...base, type: 'faq', title: 'Frequently Asked Questions', items: [{ question: 'What is this?', answer: 'Your answer here.' }] } as FAQSection;
+  if (type === 'blog-posts')  return { ...base, type: 'blog-posts', title: 'Latest Articles', postIds: [] } as BlogPostsSection;
+  if (type === 'gallery')     return { ...base, type: 'gallery', title: '', images: [], layout: 'grid', columns: 3 } as GallerySection;
+  if (type === 'video')       return { ...base, type: 'video', sectionTitle: '', videos: [], layout: 'centered' } as VideoSection;
+  return { ...base, type: 'html', code: '<!-- Your HTML here -->' } as HTMLSection;
+};
+
+const getSectionTypeLabel = (type: string) => SECTION_TYPE_OPTIONS.find(o => o.value === type)?.label || type;
+
+const SectionEditor: React.FC<{ section: PageSection; onChange: (s: PageSection) => void; blogs?: BlogPost[] }> = ({ section, onChange, blogs = [] }) => {
+  if (section.type === 'rich-text') {
+    const s = section as RichTextSection;
+    return (
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Rich Text Content</label>
+          <ReactQuill theme="snow" value={s.content} onChange={(v) => onChange({ ...s, content: v })} />
+        </div>
+      </div>
+    );
+  }
+  if (section.type === 'hero-banner') {
+    const s = section as HeroBannerSection;
+    return (
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Banner Style</label>
+          <select value={s.bannerType} onChange={e => onChange({ ...s, bannerType: e.target.value as any })} className="w-full bg-white/5 border border-white/10 p-3 rounded-sm text-sm text-white outline-none focus:border-accent">
+            <option value="full" className="bg-[#0A0A0A]">Full Width (Dark BG)</option>
+            <option value="split" className="bg-[#0A0A0A]">Split (Text Left / Image Right)</option>
+          </select>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <InputField label="Title" value={s.title} onChange={v => onChange({ ...s, title: v })} />
+          <InputField label="Subtitle / Badge" value={s.subtitle || ''} onChange={v => onChange({ ...s, subtitle: v })} />
+          <InputField label="CTA Button Text" value={s.ctaText || ''} onChange={v => onChange({ ...s, ctaText: v })} />
+          <InputField label="CTA Button Link" value={s.ctaLink || ''} onChange={v => onChange({ ...s, ctaLink: v })} />
+        </div>
+        <TextAreaField label="Description" value={s.description || ''} onChange={v => onChange({ ...s, description: v })} />
+        <ImageUploadField label="Background / Split Image" value={s.image || ''} onChange={v => onChange({ ...s, image: v })} />
+      </div>
+    );
+  }
+  if (section.type === 'text-image') {
+    const s = section as TextImageSection;
+    return (
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Image Position</label>
+          <select value={s.layout} onChange={e => onChange({ ...s, layout: e.target.value as any })} className="w-full bg-white/5 border border-white/10 p-3 rounded-sm text-sm text-white outline-none focus:border-accent">
+            <option value="text-left" className="bg-[#0A0A0A]">Text Left · Image Right</option>
+            <option value="text-right" className="bg-[#0A0A0A]">Image Left · Text Right</option>
+          </select>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <InputField label="Title" value={s.title} onChange={v => onChange({ ...s, title: v })} />
+          <InputField label="CTA Button Text" value={s.ctaText || ''} onChange={v => onChange({ ...s, ctaText: v })} />
+          <InputField label="CTA Button Link" value={s.ctaLink || ''} onChange={v => onChange({ ...s, ctaLink: v })} />
+        </div>
+        <TextAreaField label="Body Content" value={s.content} rows={4} onChange={v => onChange({ ...s, content: v })} />
+        <ImageUploadField label="Section Image" value={s.image} onChange={v => onChange({ ...s, image: v })} />
+      </div>
+    );
+  }
+  if (section.type === 'faq') {
+    const s = section as FAQSection;
+    const updItem = (idx: number, field: 'question' | 'answer', val: string) => {
+      const items = [...s.items]; items[idx] = { ...items[idx], [field]: val }; onChange({ ...s, items });
+    };
+    const addItem = () => onChange({ ...s, items: [...s.items, { question: 'New question?', answer: 'Answer here.' }] });
+    const delItem = (idx: number) => { const items = [...s.items]; items.splice(idx, 1); onChange({ ...s, items }); };
+    return (
+      <div className="space-y-6">
+        <InputField label="Section Heading (optional)" value={s.title || ''} onChange={v => onChange({ ...s, title: v })} />
+        <div className="space-y-4 pt-4 border-t border-white/5">
+          <div className="flex justify-between items-center">
+            <label className="text-[9px] font-black uppercase tracking-widest text-accent">FAQ Items</label>
+            <button onClick={addItem} className="bg-white/5 hover:bg-white/10 px-4 py-2 rounded-sm text-[9px] font-black uppercase tracking-widest flex items-center gap-2 transition-colors"><Plus size={12} /> Add Q&amp;A</button>
+          </div>
+          {s.items.map((item, idx) => (
+            <div key={idx} className="bg-white/5 p-5 rounded-sm space-y-3 relative group">
+              <button onClick={() => delItem(idx)} className="absolute top-3 right-3 text-gray-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={14} /></button>
+              <InputField label={`Q${idx + 1} — Question`} value={item.question} onChange={v => updItem(idx, 'question', v)} />
+              <TextAreaField label="Answer" value={item.answer} rows={3} onChange={v => updItem(idx, 'answer', v)} />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  if (section.type === 'blog-posts') {
+    const s = section as BlogPostsSection;
+    const MAX = 3;
+    const currentIds = (s.postIds || []).map(String);
+    const canAdd = currentIds.length < MAX;
+
+    const setPostId = (slotIdx: number, val: string) => {
+      const ids = [...currentIds];
+      if (val === '__empty__') {
+        ids.splice(slotIdx, 1);
+      } else {
+        ids[slotIdx] = val;
+      }
+      onChange({ ...s, postIds: ids.slice(0, MAX) });
+    };
+
+    const addSlot = () => onChange({ ...s, postIds: [...currentIds, '__empty__'] });
+
+    return (
+      <div className="space-y-6">
+        <InputField label="Section Heading (optional)" value={s.title || ''} onChange={v => onChange({ ...s, title: v })} />
+        <div className="space-y-4 pt-4 border-t border-white/5">
+          <div className="flex justify-between items-center">
+            <label className="text-[9px] font-black uppercase tracking-widest text-accent">
+              Selected Blog Posts <span className="text-gray-600 normal-case font-medium">({currentIds.filter(id => id !== '__empty__').length} / {MAX} max)</span>
+            </label>
+            {canAdd && (
+              <button
+                onClick={addSlot}
+                className="bg-white/5 hover:bg-white/10 px-4 py-2 rounded-sm text-[9px] font-black uppercase tracking-widest flex items-center gap-2 transition-colors"
+              >
+                <Plus size={12} /> Add Slot
+              </button>
+            )}
+          </div>
+          {blogs.length === 0 && (
+            <p className="text-gray-600 text-[10px] italic">No blog posts exist yet. Create articles in the Journal tab first.</p>
+          )}
+          {currentIds.map((pid, slotIdx) => (
+            <div key={slotIdx} className="flex items-center gap-3">
+              <select
+                value={pid === '__empty__' ? '__empty__' : pid}
+                onChange={e => setPostId(slotIdx, e.target.value)}
+                className="flex-1 bg-[#050505] border border-white/20 p-3 rounded-sm text-sm text-white outline-none focus:border-accent cursor-pointer"
+              >
+                <option value="__empty__" className="bg-[#0A0A0A]">— Select a blog post —</option>
+                {blogs.map(b => (
+                  <option key={String(b.id)} value={String(b.id)} className="bg-[#0A0A0A]">
+                    {b.title || `Post ${b.id}`}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={() => setPostId(slotIdx, '__empty__')}
+                className="text-gray-600 hover:text-red-400 p-2 transition-colors flex-shrink-0"
+                title="Remove slot"
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
+          ))}
+          {currentIds.length === 0 && blogs.length > 0 && (
+            <p className="text-gray-600 text-[10px] italic">Click "Add Slot" to pick blog posts to feature.</p>
+          )}
+        </div>
+      </div>
+    );
+  }
+  if (section.type === 'gallery') {
+    const s = section as GallerySection;
+    const LAYOUT_OPTIONS = [
+      { value: 'grid',     label: '▦ Grid',     desc: 'Equal squares' },
+      { value: 'masonry',  label: '█ Masonry',  desc: 'Varying heights' },
+      { value: 'featured', label: '⬜ Featured', desc: 'Hero + thumbnails' },
+      { value: 'strip',    label: '▭ Strip',    desc: 'Horizontal scroll' },
+    ];
+    return (
+      <div className="space-y-6">
+        <InputField label="Section Heading (optional)" value={s.title || ''} onChange={v => onChange({ ...s, title: v })} />
+
+        {/* Layout Picker */}
+        <div className="space-y-3">
+          <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 block">Gallery Layout</label>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {LAYOUT_OPTIONS.map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => onChange({ ...s, layout: opt.value as GallerySection['layout'] })}
+                className={`p-4 rounded-sm border text-left transition-all ${
+                  s.layout === opt.value
+                    ? 'border-accent bg-accent/10 text-white'
+                    : 'border-white/10 bg-white/5 text-gray-400 hover:border-white/30'
+                }`}
+              >
+                <div className="text-lg mb-1">{opt.label.split(' ')[0]}</div>
+                <div className="text-[9px] font-black uppercase tracking-widest">{opt.label.split(' ').slice(1).join(' ')}</div>
+                <div className="text-[8px] text-gray-600 mt-1 font-medium">{opt.desc}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Columns (hidden for strip) */}
+        {s.layout !== 'strip' && (
+          <div className="space-y-3">
+            <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 block">Columns</label>
+            <div className="flex gap-3">
+              {([2, 3, 4] as const).map(n => (
+                <button
+                  key={n}
+                  onClick={() => onChange({ ...s, columns: n })}
+                  className={`px-6 py-3 rounded-sm text-sm font-black transition-all ${
+                    (s.columns || 3) === n
+                      ? 'bg-accent text-dark'
+                      : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                  }`}
+                >
+                  {n} cols
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Images */}
+        <MultiImageManager
+          label={`Images (${s.images?.length || 0} uploaded)`}
+          images={s.images || []}
+          onChange={imgs => onChange({ ...s, images: imgs })}
+        />
+      </div>
+    );
+  }
+  if (section.type === 'video') {
+    const s = section as VideoSection;
+    const videos = s.videos || [];
+    const detectBadge = (url: string) => {
+      if (!url) return null;
+      if (url.includes('youtube.com') || url.includes('youtu.be')) return { label: 'YouTube', cls: 'text-red-400' };
+      if (url.includes('tiktok.com'))  return { label: 'TikTok',  cls: 'text-pink-400' };
+      if (url.includes('vimeo.com'))   return { label: 'Vimeo',   cls: 'text-blue-400' };
+      return { label: 'Unsupported URL', cls: 'text-yellow-500' };
+    };
+    const setVideo = (i: number, field: string, val: string) => {
+      const updated = [...videos];
+      updated[i] = { ...updated[i], [field]: val };
+      onChange({ ...s, videos: updated });
+    };
+    const addVideo = () => onChange({ ...s, videos: [...videos, { url: '', title: '', caption: '' }] });
+    const removeVideo = (i: number) => { const v = [...videos]; v.splice(i, 1); onChange({ ...s, videos: v }); };
+    return (
+      <div className="space-y-6">
+        {/* Section heading + layout */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <InputField label="Section Heading (optional)" value={s.sectionTitle || ''} onChange={v => onChange({ ...s, sectionTitle: v })} />
+          <div className="space-y-2">
+            <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 block">Player Width</label>
+            <div className="flex gap-3">
+              {(['centered', 'full'] as const).map(opt => (
+                <button key={opt} onClick={() => onChange({ ...s, layout: opt })}
+                  className={`px-5 py-2.5 rounded-sm text-[9px] font-black uppercase tracking-widest transition-all ${s.layout === opt ? 'bg-accent text-dark' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}>
+                  {opt === 'centered' ? '□ Centered' : '▬ Full'}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Video list */}
+        <div className="space-y-4 pt-4 border-t border-white/5">
+          <div className="flex justify-between items-center">
+            <label className="text-[9px] font-black uppercase tracking-widest text-accent">
+              Videos <span className="text-gray-600 font-medium normal-case">({videos.length} — carousel if &gt; 1)</span>
+            </label>
+            <button onClick={addVideo} className="bg-white/5 hover:bg-white/10 px-4 py-2 rounded-sm text-[9px] font-black uppercase tracking-widest flex items-center gap-2 transition-colors">
+              <Plus size={12} /> Add Video
+            </button>
+          </div>
+          {videos.length === 0 && (
+            <p className="text-gray-600 text-[10px] italic">Click "Add Video" to add your first video.</p>
+          )}
+          {videos.map((v, i) => {
+            const badge = detectBadge(v.url);
+            return (
+              <div key={i} className="bg-white/5 p-5 rounded-sm space-y-3 relative group">
+                <button onClick={() => removeVideo(i)} className="absolute top-3 right-3 text-gray-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={14} /></button>
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 block">Video {i + 1} URL</label>
+                  <input
+                    type="url"
+                    value={v.url}
+                    onChange={e => setVideo(i, 'url', e.target.value)}
+                    placeholder="Paste YouTube, TikTok or Vimeo link..."
+                    className="w-full bg-[#050505] border border-white/20 p-3 rounded-sm text-sm text-white outline-none focus:border-accent placeholder-gray-700 font-mono"
+                  />
+                  {v.url && badge && (
+                    <span className={`text-[9px] font-black uppercase tracking-widest ${badge.cls}`}>✓ {badge.label}</span>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <InputField label="Title (optional)" value={v.title || ''} onChange={val => setVideo(i, 'title', val)} />
+                  <InputField label="Caption (optional)" value={v.caption || ''} onChange={val => setVideo(i, 'caption', val)} />
+                </div>
+              </div>
+            );
+          })}
+          <p className="text-[9px] text-gray-700 font-medium">Supported: youtube.com · youtu.be · youtube.com/shorts · tiktok.com/@user/video · vimeo.com</p>
+        </div>
+      </div>
+    );
+  }
+  // html / fallback
+  const s = section as HTMLSection;
+  return (
+    <div className="space-y-2">
+      <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 block">Custom HTML / Embed Code</label>
+      <textarea
+        rows={12}
+        value={s.code}
+        onChange={e => onChange({ ...s, code: e.target.value })}
+        className="w-full bg-black border border-white/10 p-4 rounded-sm text-xs text-green-400 font-mono focus:border-accent outline-none resize-y"
+        placeholder="<!-- Paste your HTML, iframe, or embed code here -->"
+      />
+    </div>
+  );
+};
+
+const SectionsManager: React.FC<{ localContent: any; setLocalContent: React.Dispatch<React.SetStateAction<any>> }> = ({ localContent, setLocalContent }) => {
+  const [activePage, setActivePage] = useState(PAGE_TARGETS[0].key);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [selectedType, setSelectedType] = useState('rich-text');
+
+  const target = PAGE_TARGETS.find(p => p.key === activePage)!;
+
+  const getSections = (): PageSection[] => {
+    if (target.path) {
+      return (localContent[target.path]?.[target.field] || []) as PageSection[];
+    }
+    return (localContent[target.field] || []) as PageSection[];
+  };
+
+  const setSections = (sections: PageSection[]) => {
+    const reordered = sections.map((s, i) => ({ ...s, order: i }));
+    setLocalContent((prev: any) => {
+      if (target.path) {
+        return { ...prev, [target.path]: { ...prev[target.path], [target.field]: reordered } };
+      }
+      return { ...prev, [target.field]: reordered };
+    });
+  };
+
+  const sections = getSections();
+
+  const addSection = () => {
+    const s = newSection(selectedType);
+    s.order = sections.length;
+    setSections([...sections, s]);
+    setExpandedId(s.id);
+  };
+
+  const removeSection = (id: string) => { if (expandedId === id) setExpandedId(null); setSections(sections.filter(s => s.id !== id)); };
+
+  const moveSection = (id: string, dir: -1 | 1) => {
+    const idx = sections.findIndex(s => s.id === id);
+    if (idx + dir < 0 || idx + dir >= sections.length) return;
+    const arr = [...sections];
+    [arr[idx], arr[idx + dir]] = [arr[idx + dir], arr[idx]];
+    setSections(arr);
+  };
+
+  const updateSectionData = (updated: PageSection) => setSections(sections.map(s => s.id === updated.id ? updated : s));
+
+  return (
+    <div className="space-y-10">
+      <div>
+        <h3 className="text-2xl font-display font-black uppercase italic tracking-tighter mb-2">Custom Sections</h3>
+        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Add, reorder and edit rich content sections per page — then Push to Cloud.</p>
+      </div>
+
+      {/* Page Selector */}
+      <div className="space-y-3">
+        <label className="text-[9px] font-black uppercase tracking-widest text-accent block">Select Page</label>
+        <div className="flex flex-wrap gap-2">
+          {PAGE_TARGETS.map(p => (
+            <button
+              key={p.key}
+              onClick={() => { setActivePage(p.key); setExpandedId(null); }}
+              className={`px-5 py-3 rounded-sm text-[9px] font-black uppercase tracking-widest transition-all ${
+                activePage === p.key ? 'bg-accent text-dark shadow-lg' : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
+              }`}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Add Section */}
+      <div className="bg-white/5 border border-white/10 p-6 rounded-sm">
+        <p className="text-[9px] font-black uppercase tracking-widest text-accent mb-4">Add to: <span className="text-white">{PAGE_TARGETS.find(p => p.key === activePage)?.label}</span></p>
+        <div className="flex flex-col sm:flex-row gap-4 items-end">
+          <div className="space-y-2 flex-1">
+            <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Section Type</label>
+            <select
+              value={selectedType}
+              onChange={e => setSelectedType(e.target.value)}
+              className="w-full bg-[#050505] border border-white/20 p-3 rounded-sm text-sm text-white outline-none focus:border-accent cursor-pointer"
+            >
+              {SECTION_TYPE_OPTIONS.map(o => (
+                <option key={o.value} value={o.value} className="bg-[#0A0A0A]">{o.label}</option>
+              ))}
+            </select>
+          </div>
+          <button onClick={addSection} className="bg-accent text-dark px-10 py-3 rounded-sm font-black uppercase text-[10px] tracking-widest flex items-center gap-2 hover:scale-105 transition-transform shadow-lg whitespace-nowrap">
+            <Plus size={14} /> Add Section
+          </button>
+        </div>
+      </div>
+
+      {/* Section List */}
+      <div className="space-y-3">
+        {sections.length === 0 ? (
+          <div className="text-center py-20 border-2 border-dashed border-white/10 rounded-sm">
+            <div className="text-5xl mb-4 opacity-20">✦</div>
+            <p className="text-gray-600 text-[10px] font-black uppercase tracking-widest mb-2">No sections on this page yet</p>
+            <p className="text-gray-700 text-[9px] font-medium tracking-wider">Pick a type above and click Add Section</p>
+          </div>
+        ) : sections.map((section, idx) => (
+          <div key={section.id} className={`border rounded-sm overflow-hidden transition-all ${
+            expandedId === section.id ? 'border-accent/40 shadow-lg shadow-accent/5' : 'border-white/10'
+          }`}>
+            {/* Row */}
+            <div className="flex items-center gap-3 px-4 py-3 bg-white/5">
+              <div className="flex flex-col gap-0.5">
+                <button onClick={() => moveSection(section.id, -1)} disabled={idx === 0} title="Move up" className="text-gray-600 hover:text-accent disabled:opacity-20 transition-colors p-0.5"><ArrowUp size={13} /></button>
+                <button onClick={() => moveSection(section.id, 1)} disabled={idx === sections.length - 1} title="Move down" className="text-gray-600 hover:text-accent disabled:opacity-20 transition-colors p-0.5"><ArrowDown size={13} /></button>
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className="text-[8px] font-black uppercase tracking-[0.3em] text-gray-600">#{idx + 1} · </span>
+                <span className="text-sm font-bold text-white">{getSectionTypeLabel(section.type)}</span>
+                {section.type === 'hero-banner' && <span className="ml-2 text-[9px] text-gray-500 capitalize"> — {(section as HeroBannerSection).bannerType}</span>}
+                {section.type === 'text-image' && <span className="ml-2 text-[9px] text-gray-500"> — {(section as TextImageSection).layout === 'text-left' ? 'Text Left' : 'Text Right'}</span>}
+                {section.type === 'faq' && <span className="ml-2 text-[9px] text-gray-500"> — {(section as FAQSection).items?.length || 0} items</span>}
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setExpandedId(expandedId === section.id ? null : section.id)}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-sm text-[9px] font-black uppercase tracking-widest transition-all ${
+                    expandedId === section.id ? 'bg-accent text-dark' : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                  }`}
+                >
+                  <Edit3 size={12} />{expandedId === section.id ? 'Close' : 'Edit'}
+                </button>
+                <button onClick={() => removeSection(section.id)} className="bg-white/5 hover:bg-red-500/20 text-gray-500 hover:text-red-400 p-2 rounded-sm transition-all" title="Delete">
+                  <Trash2 size={13} />
+                </button>
+              </div>
+            </div>
+            {/* Editor */}
+            <AnimatePresence>
+              {expandedId === section.id && (
+                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden">
+                  <div className="p-6 border-t border-accent/20 space-y-6 bg-white/[0.02]">
+                    <SectionEditor section={section} onChange={updateSectionData} blogs={localContent.blogs || []} />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 const AdminDashboard: React.FC = () => {
   const { content, isAdmin, logout, isLoading: isGlobalLoading, updateContent, dbConfig } = useSite();
-  const [activeTab, setActiveTab] = useState<'branding' | 'navigation' | 'home' | 'services' | 'endorsements' | 'favorites' | 'blogs' | 'contact' | 'inquiries' | 'subscribers' | 'scripts' | 'system'>('branding');
+  const [activeTab, setActiveTab] = useState<'branding' | 'navigation' | 'home' | 'services' | 'endorsements' | 'favorites' | 'blogs' | 'contact' | 'sections' | 'inquiries' | 'subscribers' | 'scripts' | 'system'>('branding');
   const [localContent, setLocalContent] = useState(content);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -420,6 +915,7 @@ const AdminDashboard: React.FC = () => {
               { id: 'favorites', icon: Heart, label: 'Favorites' },
               { id: 'blogs', icon: FileText, label: 'Journal' },
               { id: 'contact', icon: Phone, label: 'Contact Info' },
+              { id: 'sections', icon: Layout, label: 'Custom Sections' },
               { id: 'inquiries', icon: MessageSquare, label: 'Inquiries' },
               { id: 'subscribers', icon: Mail, label: 'Subscribers' },
               { id: 'scripts', icon: Code, label: 'Scripts' },
@@ -711,7 +1207,11 @@ const AdminDashboard: React.FC = () => {
                   onUpdate={() => {}}
                   renderItem={(item, idx) => (
                     <div className="space-y-4">
-                      <InputField label="Title" value={item.title} onChange={(v) => { const b = [...localContent.blogs]; b[idx].title = v; updateSection('blogs', b); }} />
+                      <ImageUploadField label="Featured Image" value={item.image || ''} onChange={(v) => { const b = [...localContent.blogs]; b[idx].image = v; updateSection('blogs', b); }} />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <InputField label="Title" value={item.title} onChange={(v) => { const b = [...localContent.blogs]; b[idx].title = v; updateSection('blogs', b); }} />
+                        <InputField label="Date (YYYY-MM-DD)" value={item.date} onChange={(v) => { const b = [...localContent.blogs]; b[idx].date = v; updateSection('blogs', b); }} />
+                      </div>
                       <TextAreaField label="Excerpt" value={item.excerpt} onChange={(v) => { const b = [...localContent.blogs]; b[idx].excerpt = v; updateSection('blogs', b); }} />
                       <div className="space-y-2">
                          <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Rich Content</label>
@@ -843,6 +1343,10 @@ const AdminDashboard: React.FC = () => {
                   {subscribers.map(sub => <div key={sub.id} className="p-4 bg-white/5 border border-white/5">{sub.email}</div>)}
                 </div>
               </div>
+            )}
+
+            {activeTab === 'sections' && (
+              <SectionsManager localContent={localContent} setLocalContent={setLocalContent} />
             )}
 
             {activeTab === 'system' && (

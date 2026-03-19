@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { CheckCircle2, Search, TrendingUp, Users, Video, ArrowUpRight } from 'lucide-react';
 import { useSite } from '../contexts/SiteContext';
 import { getCalApi } from "@calcom/embed-react";
+import { PageSections } from '../components/PageSections';
 
 const Services: React.FC = () => {
   const { content } = useSite();
@@ -101,6 +102,11 @@ const Services: React.FC = () => {
               </motion.div>
             ))}
           </div>
+        </div>
+
+        {/* Custom Sections */}
+        <div className="mb-20 md:mb-24">
+          <PageSections sections={services.sections} />
         </div>
 
         {/* Final CTA */}

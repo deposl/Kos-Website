@@ -5,6 +5,7 @@ import { Send, Calendar, Mail, MapPin, Phone, Loader2, CheckCircle } from 'lucid
 import { createClient } from '@supabase/supabase-js';
 import { useSite } from '../contexts/SiteContext';
 import { getCalApi } from "@calcom/embed-react";
+import { PageSections } from '../components/PageSections';
 
 const Contact: React.FC = () => {
   const { dbConfig, content } = useSite();
@@ -213,6 +214,11 @@ const Contact: React.FC = () => {
               </div>
             </motion.div>
           </div>
+        </div>
+
+        {/* Custom Sections */}
+        <div className="mt-24">
+          <PageSections sections={contactInfo.sections} />
         </div>
       </div>
     </div>

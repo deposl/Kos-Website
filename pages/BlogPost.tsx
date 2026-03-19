@@ -4,6 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useSite } from '../contexts/SiteContext';
 import { ArrowLeft, Calendar, Share2 } from 'lucide-react';
+import { PageSections } from '../components/PageSections';
 
 const BlogPost: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -45,7 +46,7 @@ const BlogPost: React.FC = () => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-4xl sm:text-5xl md:text-7xl font-display font-black uppercase italic tracking-tighter leading-[0.9] mb-12 break-words"
+            className="text-2xl sm:text-3xl md:text-4xl font-display font-black uppercase tracking-tight leading-tight mb-10 break-words"
           >
             {post.title}
           </motion.h1>
@@ -80,6 +81,11 @@ const BlogPost: React.FC = () => {
             View All Posts
           </Link>
         </footer>
+
+        {/* Custom Sections */}
+        <div className="mt-24">
+          <PageSections sections={post.sections} />
+        </div>
       </article>
     </div>
   );

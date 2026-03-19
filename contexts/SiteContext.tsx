@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useMemo } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { SiteContent, BlogPost, FavoriteItem, TypographyConfig } from '../types';
 import { defaultContent } from '../data/defaultContent';
@@ -8,7 +8,7 @@ const defaultUrl = 'https://sb.kostagenaris.com';
 const defaultKey = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJzdXBhYmFzZSIsImlhdCI6MTc2ODM5NzI4MCwiZXhwIjo0OTI0MDcwODgwLCJyb2xlIjoiYW5vbiJ9.j0rfGMGqGBC8VtwTR3Jq42Q8K8wuFZUTt6rf2YBhPa8';
 
 export const rawHost = 'sb.kostagenaris.com';
-const CONTENT_CACHE_KEY = 'creatorpro_site_content_v6'; // Incremented version for clean migration
+const CONTENT_CACHE_KEY = 'creatorpro_site_content_v9'; // bumped to fix merge logic and clear poisoned cache
 
 interface TestResult {
   success: boolean;
@@ -64,7 +64,11 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const [isAdmin, setIsAdmin] = useState(() => sessionStorage.getItem('is_admin') === 'true');
-  
+
+  // Always-current ref so fetchData never reads a stale closure value of content
+  const contentRef = useRef(content);
+  useEffect(() => { contentRef.current = content; }, [content]);
+
   // Only show the preloader if we have NO cached data at all
   const [isLoading, setIsLoading] = useState(() => {
     const cached = localStorage.getItem(CONTENT_CACHE_KEY);
@@ -80,12 +84,11 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const fetchData = async (silent = false) => {
-    // Determine if we should block UI or run in background (SWR)
+    // If cache exists, run in background without blocking UI
     const hasCache = !!localStorage.getItem(CONTENT_CACHE_KEY);
     const backgroundSync = silent || hasCache;
-
     if (!backgroundSync) setIsLoading(true);
-    
+
     try {
       const [settingsRes, blogsRes, favsRes] = await Promise.all([
         supabase.from('site_settings').select('*').eq('id', 1).maybeSingle(),
@@ -94,27 +97,29 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
       ]);
 
       const settings = settingsRes.data;
-      const blogs = blogsRes.data || [];
+      const blogs = (blogsRes.data || []).map((b: any) => ({ ...b, id: String(b.id) }));
       const favs = favsRes.data || [];
 
-      // If settings exists, we favor DB data over defaults entirely
+      const cur = contentRef.current; // always-current, never stale
       const updatedContent: SiteContent = {
         branding: { 
           ...defaultContent.branding, 
           ...(settings?.branding || {}),
           adminKey: settings?.admin_key || 'admin123'
         },
-        typography: settings?.typography_data ? { ...defaultContent.typography, ...settings.typography_data } : content.typography || defaultContent.typography,
-        home: settings?.home_data ? { ...settings.home_data } : content.home,
-        services: settings?.services_data ? { ...settings.services_data } : content.services,
-        endorsements: settings?.endorsements_data ? { ...settings.endorsements_data } : content.endorsements,
-        favorites_seo: settings?.favorites_seo || content.favorites_seo || defaultContent.favorites_seo,
-        blogs_seo: settings?.blogs_seo || content.blogs_seo || defaultContent.blogs_seo,
-        navLinks: (settings?.nav_links && settings.nav_links.length > 0) ? settings.nav_links : content.navLinks,
-        blogs: blogs.length > 0 ? blogs : (settings ? [] : content.blogs),
-        favorites: favs.length > 0 ? favs : (settings ? [] : content.favorites),
-        contact: settings?.contact_data ? { ...settings.contact_data } : content.contact,
-        customScripts: settings?.custom_scripts ? { ...settings.custom_scripts } : content.customScripts
+        typography: settings?.typography_data ? { ...defaultContent.typography, ...settings.typography_data } : cur.typography || defaultContent.typography,
+        home: settings?.home_data ? { ...cur.home, ...settings.home_data } : cur.home,
+        services: settings?.services_data ? { ...cur.services, ...settings.services_data } : cur.services,
+        endorsements: settings?.endorsements_data ? { ...cur.endorsements, ...settings.endorsements_data } : cur.endorsements,
+        favorites_seo: settings?.favorites_seo || cur.favorites_seo || defaultContent.favorites_seo,
+        blogs_seo: settings?.blogs_seo || cur.blogs_seo || defaultContent.blogs_seo,
+        navLinks: (settings?.nav_links && settings.nav_links.length > 0) ? settings.nav_links : cur.navLinks,
+        blogs: blogs.length > 0 ? blogs : (settings ? [] : cur.blogs),
+        favorites: favs.length > 0 ? favs : (settings ? [] : cur.favorites),
+        contact: settings?.contact_data ? { ...cur.contact, ...settings.contact_data } : cur.contact,
+        customScripts: settings?.custom_scripts ? { ...settings.custom_scripts } : cur.customScripts,
+        blog_page_sections: settings?.blog_page_sections ?? cur.blog_page_sections ?? [],
+        favorites_page_sections: settings?.favorites_page_sections ?? cur.favorites_page_sections ?? [],
       };
 
       setContent(updatedContent);
@@ -258,13 +263,16 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
         blogs_seo: newContent.blogs_seo,
         nav_links: newContent.navLinks,
         contact_data: newContent.contact,
-        custom_scripts: newContent.customScripts
+        custom_scripts: newContent.customScripts,
+        blog_page_sections: newContent.blog_page_sections ?? [],
+        favorites_page_sections: newContent.favorites_page_sections ?? [],
       }, { onConflict: 'id' });
       
       if (sErr) throw new Error(sErr.message);
 
       await supabase.from('blogs').delete().filter('id', 'not.is', null);
       const blogsToInsert = (newContent.blogs || []).map(b => ({
+        ...(b.id && !/^\d{13}$/.test(b.id) ? { id: b.id } : {}), // preserve DB ids, skip Date.now() temp ids
         title: b.title, date: b.date, excerpt: b.excerpt, content: b.content, image: b.image,
         seo_title: b.seo_title || '', seo_description: b.seo_description || ''
       }));

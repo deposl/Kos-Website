@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ExternalLink, Tag, ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useSite } from '../contexts/SiteContext';
+import { PageSections } from '../components/PageSections';
 
 const Favorites: React.FC = () => {
   const { content } = useSite();
@@ -65,6 +66,11 @@ const Favorites: React.FC = () => {
               </div>
             </motion.div>
           ))}
+        </div>
+
+        {/* Custom Sections */}
+        <div className="mt-24">
+          <PageSections sections={content.favorites_page_sections} />
         </div>
       </div>
     </div>

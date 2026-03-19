@@ -4,6 +4,80 @@ export interface SEOConfig {
   metaDescription: string;
 }
 
+export type SectionType = 'rich-text' | 'hero-banner' | 'text-image' | 'html' | 'faq' | 'blog-posts' | 'gallery' | 'video';
+
+export interface BaseSection {
+  id: string;
+  type: SectionType;
+  order: number;
+}
+
+export interface RichTextSection extends BaseSection {
+  type: 'rich-text';
+  content: string;
+}
+
+export interface HeroBannerSection extends BaseSection {
+  type: 'hero-banner';
+  bannerType: 'split' | 'full' | 'video'; // Example hero types
+  title: string;
+  subtitle?: string;
+  description?: string;
+  image?: string;
+  ctaText?: string;
+  ctaLink?: string;
+}
+
+export interface TextImageSection extends BaseSection {
+  type: 'text-image';
+  layout: 'text-left' | 'text-right';
+  title: string;
+  content: string;
+  ctaText?: string;
+  ctaLink?: string;
+  image: string;
+}
+
+export interface HTMLSection extends BaseSection {
+  type: 'html';
+  code: string;
+}
+
+export interface FAQSection extends BaseSection {
+  type: 'faq';
+  title?: string;
+  items: { question: string; answer: string }[];
+}
+
+export interface BlogPostsSection extends BaseSection {
+  type: 'blog-posts';
+  title?: string;
+  postIds: string[]; // max 3
+}
+
+export interface GallerySection extends BaseSection {
+  type: 'gallery';
+  title?: string;
+  images: string[];
+  layout: 'grid' | 'masonry' | 'featured' | 'strip';
+  columns: 2 | 3 | 4;
+}
+
+export interface VideoEntry {
+  url: string;
+  title?: string;
+  caption?: string;
+}
+
+export interface VideoSection extends BaseSection {
+  type: 'video';
+  sectionTitle?: string;
+  videos: VideoEntry[];
+  layout: 'centered' | 'full';
+}
+
+export type PageSection = RichTextSection | HeroBannerSection | TextImageSection | HTMLSection | FAQSection | BlogPostsSection | GallerySection | VideoSection;
+
 export interface NavLink {
   id: string;
   name: string;
@@ -72,6 +146,7 @@ export interface HomeContent {
   services: { title: string; desc: string }[];
   clients: ClientBrand[];
   socialProofBar?: string[];
+  sections?: PageSection[];
 }
 
 export interface ServiceItem {
@@ -87,6 +162,7 @@ export interface ServicesContent {
   serviceBlocks: ServiceItem[];
   processes: { title: string; desc: string }[];
   ctaTitle: string;
+  sections?: PageSection[];
 }
 
 export interface EndorsementOption {
@@ -102,6 +178,7 @@ export interface EndorsementsContent {
   options: EndorsementOption[];
   ctaTitle: string;
   ctaDescription: string;
+  sections?: PageSection[];
 }
 
 export interface FavoriteItem {
@@ -110,6 +187,7 @@ export interface FavoriteItem {
   desc: string;
   code: string;
   img: string;
+  sections?: PageSection[];
 }
 
 export interface BlogPost {
@@ -121,6 +199,7 @@ export interface BlogPost {
   image: string;
   seo_title?: string;
   seo_description?: string;
+  sections?: PageSection[];
 }
 
 export interface ContactContent {
@@ -134,6 +213,7 @@ export interface ContactContent {
   senderEmail?: string;
   thankYouSubject?: string;
   thankYouMessage?: string;
+  sections?: PageSection[];
 }
 
 export interface CustomScripts {
@@ -152,6 +232,8 @@ export interface SiteContent {
   favorites_seo?: SEOConfig;
   blogs: BlogPost[];
   blogs_seo?: SEOConfig;
+  blog_page_sections?: PageSection[];
+  favorites_page_sections?: PageSection[];
   navLinks: NavLink[];
   contact: ContactContent;
   customScripts?: CustomScripts;

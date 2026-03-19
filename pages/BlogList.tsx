@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useSite } from '../contexts/SiteContext';
 import { ArrowRight, Calendar } from 'lucide-react';
+import { PageSections } from '../components/PageSections';
 
 const BlogList: React.FC = () => {
   const { content } = useSite();
@@ -72,6 +73,11 @@ const BlogList: React.FC = () => {
             <p className="text-gray-400 font-bold uppercase tracking-widest">No articles found. Check back later.</p>
           </div>
         )}
+
+        {/* Custom Sections */}
+        <div className="mt-24">
+          <PageSections sections={content.blog_page_sections} />
+        </div>
       </div>
     </div>
   );
