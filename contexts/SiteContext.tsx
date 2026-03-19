@@ -8,7 +8,7 @@ const defaultUrl = 'https://sb.kostagenaris.com';
 const defaultKey = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJzdXBhYmFzZSIsImlhdCI6MTc2ODM5NzI4MCwiZXhwIjo0OTI0MDcwODgwLCJyb2xlIjoiYW5vbiJ9.j0rfGMGqGBC8VtwTR3Jq42Q8K8wuFZUTt6rf2YBhPa8';
 
 export const rawHost = 'sb.kostagenaris.com';
-const CONTENT_CACHE_KEY = 'creatorpro_site_content_v9'; // bumped to fix merge logic and clear poisoned cache
+const CONTENT_CACHE_KEY = 'creatorpro_site_content_v9'; // bumped to force-merge missing default fields
 
 interface TestResult {
   success: boolean;
@@ -38,6 +38,20 @@ const safeLocalStorageSet = (key: string, value: string) => {
   } catch (e) {
     console.warn('⚠️ Storage quota exceeded or disabled.');
   }
+};
+
+export const fixDuplicateIds = (sections: any[]) => {
+  const seen = new Set();
+  return (sections || []).map(s => {
+    if (seen.has(s.id)) {
+      const newId = (typeof crypto !== 'undefined' && crypto.randomUUID) 
+        ? crypto.randomUUID() 
+        : `id-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      return { ...s, id: newId };
+    }
+    seen.add(s.id);
+    return s;
+  });
 };
 
 export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -108,18 +122,18 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
           adminKey: settings?.admin_key || 'admin123'
         },
         typography: settings?.typography_data ? { ...defaultContent.typography, ...settings.typography_data } : cur.typography || defaultContent.typography,
-        home: settings?.home_data ? { ...cur.home, ...settings.home_data } : cur.home,
-        services: settings?.services_data ? { ...cur.services, ...settings.services_data } : cur.services,
-        endorsements: settings?.endorsements_data ? { ...cur.endorsements, ...settings.endorsements_data } : cur.endorsements,
-        favorites_seo: settings?.favorites_seo || cur.favorites_seo || defaultContent.favorites_seo,
-        blogs_seo: settings?.blogs_seo || cur.blogs_seo || defaultContent.blogs_seo,
+        home: settings?.home_data ? { ...defaultContent.home, ...settings.home_data } : cur.home,
+        services: settings?.services_data ? { ...defaultContent.services, ...settings.services_data } : cur.services,
+        endorsements: settings?.endorsements_data ? { ...defaultContent.endorsements, ...settings.endorsements_data } : cur.endorsements,
+        favorites_seo: settings?.favorites_seo ? { ...defaultContent.favorites_seo, ...settings.favorites_seo } : cur.favorites_seo || defaultContent.favorites_seo,
+        blogs_seo: settings?.blogs_seo ? { ...defaultContent.blogs_seo, ...settings.blogs_seo } : cur.blogs_seo || defaultContent.blogs_seo,
         navLinks: (settings?.nav_links && settings.nav_links.length > 0) ? settings.nav_links : cur.navLinks,
         blogs: blogs.length > 0 ? blogs : (settings ? [] : cur.blogs),
         favorites: favs.length > 0 ? favs : (settings ? [] : cur.favorites),
-        contact: settings?.contact_data ? { ...cur.contact, ...settings.contact_data } : cur.contact,
-        customScripts: settings?.custom_scripts ? { ...settings.custom_scripts } : cur.customScripts,
-        blog_page_sections: settings?.blog_page_sections ?? cur.blog_page_sections ?? [],
-        favorites_page_sections: settings?.favorites_page_sections ?? cur.favorites_page_sections ?? [],
+        contact: settings?.contact_data ? { ...defaultContent.contact, ...settings.contact_data } : cur.contact,
+        customScripts: settings?.custom_scripts ? { ...defaultContent.customScripts, ...settings.custom_scripts } : cur.customScripts,
+        blog_page_sections: fixDuplicateIds(settings?.blog_page_sections ?? cur.blog_page_sections ?? []),
+        favorites_page_sections: fixDuplicateIds(settings?.favorites_page_sections ?? cur.favorites_page_sections ?? []),
       };
 
       setContent(updatedContent);

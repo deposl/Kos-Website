@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { useSite } from '../contexts/SiteContext';
 import { getCalApi } from "@calcom/embed-react";
 import { PageSections } from '../components/PageSections';
+import { defaultContent } from '../data/defaultContent';
 
 // Custom TikTok Icon
 const TikTokIcon = ({ size = 20 }: { size?: number }) => (
@@ -18,7 +19,7 @@ const Home: React.FC = () => {
   const { content } = useSite();
   const { home, branding } = content;
   const shouldReduceMotion = useReducedMotion();
-  
+
   const slideTransition = {
     type: "spring" as const,
     stiffness: 150,
@@ -29,8 +30,8 @@ const Home: React.FC = () => {
   // Cal.com Integration
   useEffect(() => {
     (async function () {
-      const cal = await getCalApi({"namespace":"30min"});
-      cal("ui", {"hideEventTypeDetails":false,"layout":"month_view"});
+      const cal = await getCalApi({ "namespace": "30min" });
+      cal("ui", { "hideEventTypeDetails": false, "layout": "month_view" });
     })();
   }, []);
 
@@ -39,7 +40,7 @@ const Home: React.FC = () => {
   const [[heroIdx, heroDirection], setHeroPage] = useState([0, 0]);
 
   const paginateHero = (newDirection: number) => {
-    setHeroPage([ (heroIdx + newDirection + heroImages.length) % heroImages.length, newDirection ]);
+    setHeroPage([(heroIdx + newDirection + heroImages.length) % heroImages.length, newDirection]);
   };
 
   useEffect(() => {
@@ -50,23 +51,39 @@ const Home: React.FC = () => {
     return () => clearInterval(interval);
   }, [heroIdx, heroImages.length]);
 
-  // Service Slider Logic
-  const rawServiceImages = home.serviceImages && home.serviceImages.length > 0 ? home.serviceImages : [];
-  const validServiceImages = rawServiceImages.filter(img => typeof img === 'string' && img.trim() !== '');
-  
-  const serviceImages = validServiceImages.length > 0 
-    ? validServiceImages 
-    : [
-        "https://images.unsplash.com/photo-1551269901-5c5e14c25df7?q=80&w=2070&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1533750349088-cd871a92f312?q=80&w=2070&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop"
-      ];
-  
+  // Triple-Layer Fallback for Teaser Images
+  const EMERGENCY_IMAGES = [
+    "https://images.unsplash.com/photo-1551269901-5c5e14c25df7?q=80&w=2070&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1533750349088-cd871a92f312?q=80&w=2070&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop",
+    "https://placehold.co/600x800/EEE/31343C?text=Service+Teaser"
+  ];
+
+  const rawServiceImages = (home.serviceImages && Array.isArray(home.serviceImages) && home.serviceImages.length > 0)
+    ? home.serviceImages
+    : defaultContent.home.serviceImages;
+
+  const [failedIndices, setFailedIndices] = useState<Set<number>>(new Set());
+
+  let serviceImages = (rawServiceImages || [])
+    .filter(img => img && typeof img === 'string' && img.trim() !== '');
+
+  if (serviceImages.length === 0) serviceImages = EMERGENCY_IMAGES;
+
   const [[serviceIdx, serviceDirection], setServicePage] = useState([0, 0]);
 
   const paginateService = (newDirection: number) => {
-    setServicePage([ (serviceIdx + newDirection + serviceImages.length) % serviceImages.length, newDirection ]);
+    setServicePage([(serviceIdx + newDirection + serviceImages.length) % serviceImages.length, newDirection]);
   };
+
+  const handleImageError = (idx: number) => {
+    setFailedIndices(prev => new Set(prev).add(idx));
+  };
+
+  // Filter out failed images for the reel
+  const activeServiceImages = serviceImages.filter((_, i) => !failedIndices.has(i));
+  const finalServiceImages = activeServiceImages.length > 0 ? activeServiceImages : EMERGENCY_IMAGES;
+  const safeServiceIdx = serviceIdx % finalServiceImages.length;
 
   useEffect(() => {
     if (serviceImages.length <= 1) return;
@@ -77,10 +94,10 @@ const Home: React.FC = () => {
   }, [serviceIdx, serviceImages.length]);
 
   const philosophyRef = useRef<HTMLElement>(null);
-  
+
   // Global scroll for Hero
   const { scrollY } = useScroll();
-  
+
   // Section-specific scroll for Philosophy
   const { scrollYProgress: philosophyProgress } = useScroll({
     target: philosophyRef,
@@ -90,7 +107,7 @@ const Home: React.FC = () => {
   // Parallax transforms for Hero - Updated for smoother kinetic feel and mobile stability
   const rawHeroTextY = useTransform(scrollY, [0, 800], [0, -100]);
   const heroTextY = useSpring(rawHeroTextY, { stiffness: 40, damping: 25, restDelta: 0.001 });
-  
+
   const heroImgScale = useTransform(scrollY, [0, 800], [1, 1.12]);
   const heroBgTextX = useTransform(scrollY, [0, 1000], [0, -250]);
 
@@ -116,9 +133,9 @@ const Home: React.FC = () => {
     visible: {
       y: 0,
       opacity: 1,
-      transition: { 
-        duration: 0.8, 
-        ease: [0.19, 1, 0.22, 1] as [number, number, number, number] 
+      transition: {
+        duration: 0.8,
+        ease: [0.19, 1, 0.22, 1] as [number, number, number, number]
       }
     }
   };
@@ -127,15 +144,15 @@ const Home: React.FC = () => {
     <div className="bg-white text-dark overflow-hidden font-sans fade-in">
       {/* Hero Section */}
       <section className="relative h-auto md:min-h-screen flex flex-col md:flex-row bg-white pt-24 md:pt-36 gpu-accelerated overflow-hidden">
-        
+
         {/* Visual Column */}
         <div className="w-full md:w-[50%] h-[50vh] md:h-screen relative overflow-hidden bg-gray-100 order-1 md:order-2 touch-pan-y">
-          <motion.div 
+          <motion.div
             style={{ scale: heroImgScale, willChange: 'transform' }}
             className="w-full h-full relative transform-gpu"
           >
             {/* Continuous Reel Container */}
-            <motion.div 
+            <motion.div
               className="flex w-full h-full transform-gpu"
               animate={{ x: `-${heroIdx * 100}%` }}
               transition={slideTransition}
@@ -143,9 +160,9 @@ const Home: React.FC = () => {
             >
               {heroImages.map((img, i) => (
                 <div key={i} className="w-full h-full flex-shrink-0">
-                  <img 
-                    src={img} 
-                    alt={`Hero ${i}`} 
+                  <img
+                    src={img}
+                    alt={`Hero ${i}`}
                     className="w-full h-full object-cover block"
                     loading="eager"
                   />
@@ -153,7 +170,7 @@ const Home: React.FC = () => {
               ))}
             </motion.div>
             <div className="absolute inset-0 bg-gradient-to-r from-white via-transparent to-transparent opacity-10 pointer-events-none z-10" />
-            
+
             {heroImages.length > 1 && (
               <div className="absolute bottom-10 left-10 flex space-x-3 z-30">
                 {heroImages.map((_, i) => (
@@ -187,19 +204,19 @@ const Home: React.FC = () => {
               <span className="inline-flex items-center gap-2 bg-dark text-accent px-4 py-2 rounded-sm text-[9px] font-black uppercase tracking-[0.3em] mb-8">
                 <Zap size={10} fill="currentColor" /> {home.heroBadge || 'Vertical Storytelling Pro'}
               </span>
-              
+
               <h1 className="text-[15vw] md:text-[10vw] font-display font-black uppercase tracking-tighter leading-[0.8] italic mb-0 break-words">
-                {home.heroTitle.split(' ')[0]} <br/>
+                {home.heroTitle.split(' ')[0]} <br />
                 <span className="text-accent underline decoration-4 underline-offset-[10px] md:underline-offset-[15px]">{home.heroSubTitle}</span>
               </h1>
             </motion.div>
-            
+
             <p className="text-gray-500 max-w-sm mx-auto md:mx-0 mb-10 text-sm md:text-base leading-relaxed font-medium tracking-tight">
               {home.heroDescription}
             </p>
-            
+
             <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12 mb-12">
-              <button 
+              <button
                 data-cal-namespace="30min"
                 data-cal-link="kosta-genaris-4slqyp/30min"
                 data-cal-config='{"layout":"month_view","useSlotsViewOnSmallScreen":"true"}'
@@ -208,22 +225,22 @@ const Home: React.FC = () => {
                 LET'S CONNECT
               </button>
               <div className="flex space-x-6 items-center">
-                <motion.a href={branding.socialLinks.tiktok} target="_blank" whileHover={{ y: -5, color: 'var(--accent-color)' }} className="text-dark"><TikTokIcon size={20}/></motion.a>
-                <motion.a href={branding.socialLinks.instagram} target="_blank" whileHover={{ y: -5, color: 'var(--accent-color)' }} className="text-dark"><Instagram size={20}/></motion.a>
-                <motion.a href={branding.socialLinks.facebook} target="_blank" whileHover={{ y: -5, color: 'var(--accent-color)' }} className="text-dark"><Facebook size={20}/></motion.a>
-                <motion.a href={branding.socialLinks.youtube} target="_blank" whileHover={{ y: -5, color: 'var(--accent-color)' }} className="text-dark"><Youtube size={20}/></motion.a>
-                <motion.a href={branding.socialLinks.linkedin} target="_blank" whileHover={{ y: -5, color: 'var(--accent-color)' }} className="text-dark"><Linkedin size={20}/></motion.a>
+                <motion.a href={branding.socialLinks.tiktok} target="_blank" whileHover={{ y: -5, color: 'var(--accent-color)' }} className="text-dark"><TikTokIcon size={20} /></motion.a>
+                <motion.a href={branding.socialLinks.instagram} target="_blank" whileHover={{ y: -5, color: 'var(--accent-color)' }} className="text-dark"><Instagram size={20} /></motion.a>
+                <motion.a href={branding.socialLinks.facebook} target="_blank" whileHover={{ y: -5, color: 'var(--accent-color)' }} className="text-dark"><Facebook size={20} /></motion.a>
+                <motion.a href={branding.socialLinks.youtube} target="_blank" whileHover={{ y: -5, color: 'var(--accent-color)' }} className="text-dark"><Youtube size={20} /></motion.a>
+                <motion.a href={branding.socialLinks.linkedin} target="_blank" whileHover={{ y: -5, color: 'var(--accent-color)' }} className="text-dark"><Linkedin size={20} /></motion.a>
               </div>
             </div>
           </motion.div>
 
           <div className="absolute bottom-4 left-8 md:left-24 overflow-hidden hidden md:block opacity-[0.05] pointer-events-none">
-             <motion.h2 
-               style={{ x: heroBgTextX, willChange: 'transform' }}
-               className="text-[12vw] font-display font-black uppercase leading-none tracking-tighter text-black select-none pointer-events-none whitespace-nowrap transform-gpu"
-             >
+            <motion.h2
+              style={{ x: heroBgTextX, willChange: 'transform' }}
+              className="text-[12vw] font-display font-black uppercase leading-none tracking-tighter text-black select-none pointer-events-none whitespace-nowrap transform-gpu"
+            >
               {home.heroWatermark}
-             </motion.h2>
+            </motion.h2>
           </div>
         </div>
       </section>
@@ -231,17 +248,17 @@ const Home: React.FC = () => {
       {/* Social Proof Bar */}
       <section className="py-10 border-b border-gray-100 bg-gray-50 overflow-hidden hidden md:block">
         <div className="max-w-7xl mx-auto px-6 flex justify-around items-center opacity-70">
-           {(home.socialProofBar || []).slice(0, 5).map((brandName, i) => (
-             <div key={i} className="flex items-center gap-3">
-               <span className="text-[10px] text-gray-400 font-black">0{i+1}</span>
-               <span className="font-display font-black uppercase tracking-[0.3em] text-lg">{brandName}</span>
-             </div>
-           ))}
+          {(home.socialProofBar || []).slice(0, 5).map((brandName, i) => (
+            <div key={i} className="flex items-center gap-3">
+              <span className="text-[10px] text-gray-400 font-black">0{i + 1}</span>
+              <span className="font-display font-black uppercase tracking-[0.3em] text-lg">{brandName}</span>
+            </div>
+          ))}
         </div>
       </section>
 
       {/* Philosophy Section */}
-      <section 
+      <section
         ref={philosophyRef}
         className="py-12 md:py-32 bg-dark text-white relative overflow-hidden flex items-center justify-center min-h-[40vh] gpu-accelerated"
       >
@@ -267,33 +284,39 @@ const Home: React.FC = () => {
       <section className="pt-16 pb-12 px-6 max-w-7xl mx-auto flex flex-col lg:flex-row gap-12 lg:gap-20">
         <motion.div initial={{ opacity: 0, scale: 0.98 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="flex-1 relative group transform-gpu">
           <div className="relative w-full aspect-[4/5] bg-gray-50 overflow-hidden shadow-2xl">
-             {/* Continuous Reel Container for Services */}
-             <motion.div 
-               className="flex w-full h-full transform-gpu"
-               animate={{ x: `-${serviceIdx * 100}%` }}
-               transition={slideTransition}
-               style={{ willChange: 'transform' }}
-             >
-               {serviceImages.map((img, i) => (
-                 <div key={i} className="w-full h-full flex-shrink-0">
-                    <img 
-                      src={img} 
-                      alt={`Service ${i}`} 
-                      className="w-full h-full object-cover group-hover:scale-105 transition-all duration-[2000ms] block" 
-                      loading="lazy"
-                    />
-                 </div>
-               ))}
-             </motion.div>
-             <motion.div initial={{ rotate: 5 }} whileHover={{ rotate: 0, scale: 1.05 }} className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 w-56 h-56 bg-accent text-dark p-10 flex flex-col justify-center shadow-2xl z-20 transform-gpu">
-                <span className="font-display font-black uppercase text-3xl italic leading-[0.8] mb-3 tracking-tighter">
-                  {home.serviceCardTitle.split(' ')[0]} <br/> {home.serviceCardTitle.split(' ').slice(1).join(' ')}
-                </span>
-                <span className="text-[10px] font-black tracking-[0.4em] uppercase opacity-50">{home.serviceCardLabel}</span>
-             </motion.div>
+            {/* Continuous Sliding Reel for Service Teasers */}
+            <motion.div
+              className="flex w-full h-full transform-gpu"
+              animate={{ x: `-${safeServiceIdx * 100}%` }}
+              transition={slideTransition}
+              style={{ willChange: 'transform' }}
+            >
+              {finalServiceImages.map((img, i) => (
+                <div key={i} className="w-full h-full flex-shrink-0 relative">
+                  <img
+                    src={img}
+                    alt={`Service Teaser ${i}`}
+                    className="w-full h-full object-cover block"
+                    loading="lazy"
+                    onError={() => handleImageError(i)}
+                  />
+                </div>
+              ))}
+            </motion.div>
+
+            <motion.div
+              initial={{ rotate: 5 }}
+              whileHover={{ rotate: 0, scale: 1.05 }}
+              className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 w-56 h-56 bg-accent text-dark p-10 flex flex-col justify-center shadow-2xl z-10 transform-gpu"
+            >
+              <span className="font-display font-black uppercase text-3xl italic leading-[0.8] mb-3 tracking-tighter">
+                {home.serviceCardTitle.split(' ')[0]} <br /> {home.serviceCardTitle.split(' ').slice(1).join(' ')}
+              </span>
+              <span className="text-[10px] font-black tracking-[0.4em] uppercase opacity-50">{home.serviceCardLabel}</span>
+            </motion.div>
           </div>
         </motion.div>
-        
+
         <motion.div variants={containerVariants} initial="hidden" whileInView="visible" viewport={{ once: true }} className="flex-1 space-y-12 md:space-y-16 py-4 md:py-10">
           {home.services.map((item, i) => (
             <motion.div key={i} variants={itemVariants} className="max-w-md group transform-gpu">
@@ -312,27 +335,27 @@ const Home: React.FC = () => {
       <section className="py-16 md:py-24 bg-white px-6 border-b border-gray-50 gpu-accelerated">
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-12 lg:gap-32">
           <div className="flex-1 relative">
-             <motion.div initial={{ x: -20, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} viewport={{ once: true }} className="aspect-[4/5] bg-gray-50 overflow-hidden relative shadow-2xl transform-gpu">
-               <img src={home.aboutImage} alt="About" className="w-full h-full object-cover transition-all duration-700 hover:scale-105 block" loading="lazy" />
-             </motion.div>
+            <motion.div initial={{ x: -20, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} viewport={{ once: true }} className="aspect-[4/5] bg-gray-50 overflow-hidden relative shadow-2xl transform-gpu">
+              <img src={home.aboutImage} alt="About" className="w-full h-full object-cover transition-all duration-700 hover:scale-105 block" loading="lazy" />
+            </motion.div>
           </div>
           <div className="flex-1 flex flex-col justify-center">
-             <motion.h2 initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="text-4xl sm:text-5xl lg:text-6xl font-display font-black uppercase tracking-tighter mb-8 md:mb-14 leading-[0.9] transform-gpu">
-               {home.aboutTitle}
-             </motion.h2>
-             <div className="space-y-6 md:space-y-8 text-gray-500 text-base md:text-lg leading-relaxed mb-10 md:mb-14 max-w-lg font-medium">
-               {home.aboutText.map((p, i) => <p key={i}>{p}</p>)}
-             </div>
-             
-             {/* Optimized stats grid for mobile */}
-             <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-16 border-t border-gray-100 pt-10 md:pt-16">
-               {home.stats.map((stat, i) => (
-                 <div key={i} className="group">
-                    <span className="text-2xl md:text-4xl font-display font-black tracking-tighter group-hover:text-accent transition-colors block mb-1 md:mb-2">{stat.value}</span>
-                    <span className="text-[9px] md:text-xs font-black uppercase tracking-[0.3em] text-gray-400">{stat.label}</span>
-                 </div>
-               ))}
-             </div>
+            <motion.h2 initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="text-4xl sm:text-5xl lg:text-6xl font-display font-black uppercase tracking-tighter mb-8 md:mb-14 leading-[0.9] transform-gpu">
+              {home.aboutTitle}
+            </motion.h2>
+            <div className="space-y-6 md:space-y-8 text-gray-500 text-base md:text-lg leading-relaxed mb-10 md:mb-14 max-w-lg font-medium">
+              {home.aboutText.map((p, i) => <p key={i}>{p}</p>)}
+            </div>
+
+            {/* Optimized stats grid for mobile */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-16 border-t border-gray-100 pt-10 md:pt-16">
+              {home.stats.map((stat, i) => (
+                <div key={i} className="group">
+                  <span className="text-2xl md:text-4xl font-display font-black tracking-tighter group-hover:text-accent transition-colors block mb-1 md:mb-2">{stat.value}</span>
+                  <span className="text-[9px] md:text-xs font-black uppercase tracking-[0.3em] text-gray-400">{stat.label}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -357,17 +380,17 @@ const Home: React.FC = () => {
       <PageSections sections={home.sections} />
 
       {/* Footer CTA - Updated for Cal.com Popup and New Text */}
-      <button 
+      <button
         data-cal-namespace="30min"
         data-cal-link="kosta-genaris-4slqyp/30min"
         data-cal-config='{"layout":"month_view","useSlotsViewOnSmallScreen":"true"}'
         className="w-full block relative group overflow-hidden transform-gpu text-left"
       >
-         <motion.div whileHover={{ backgroundColor: 'var(--accent-color)', color: '#000000' }} className="bg-dark text-white py-16 md:py-24 text-center transition-colors duration-500 transform-gpu">
-           <motion.div className="text-3xl md:text-7xl font-display font-black uppercase tracking-tighter inline-flex items-center italic transform-gpu" whileHover={{ x: 30 }}>
-             BOOK A FREE CONSULTATION <ArrowRight className="ml-6 md:ml-12 w-10 h-10 md:w-16 md:h-16" />
-           </motion.div>
-         </motion.div>
+        <motion.div whileHover={{ backgroundColor: 'var(--accent-color)', color: '#000000' }} className="bg-dark text-white py-16 md:py-24 text-center transition-colors duration-500 transform-gpu">
+          <motion.div className="text-3xl md:text-7xl font-display font-black uppercase tracking-tighter inline-flex items-center italic transform-gpu" whileHover={{ x: 30 }}>
+            BOOK A FREE CONSULTATION <ArrowRight className="ml-6 md:ml-12 w-10 h-10 md:w-16 md:h-16" />
+          </motion.div>
+        </motion.div>
       </button>
     </div>
   );
